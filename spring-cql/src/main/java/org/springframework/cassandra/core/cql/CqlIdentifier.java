@@ -9,6 +9,9 @@ import org.springframework.util.Assert;
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.TableMetadata;
 
+import org.springframework.cassandra.core.cql.naming.CasePreservingCqlNamingStrategy;
+import org.springframework.cassandra.core.cql.naming.CqlNamingStrategy;
+
 /**
  * This encapsulates the logic for CQL quoted and unquoted identifiers.
  * <p/>
@@ -50,7 +53,7 @@ public final class CqlIdentifier implements Comparable<CqlIdentifier>, Serializa
 	 * @see #CqlIdentifier(String)
 	 */
 	public static CqlIdentifier cqlId(CharSequence identifier, boolean forceQuote) {
-		return new CqlIdentifier(identifier, forceQuote);
+		return new CqlIdentifier(identifier, forceQuote, new CasePreservingCqlNamingStrategy());
 	}
 
 	/**
@@ -59,7 +62,7 @@ public final class CqlIdentifier implements Comparable<CqlIdentifier>, Serializa
 	 * @see #CqlIdentifier(String, boolean)
 	 */
 	public static CqlIdentifier quotedCqlId(CharSequence identifier) {
-		return new CqlIdentifier(identifier, true);
+		return new CqlIdentifier(identifier, true, new CasePreservingCqlNamingStrategy());
 	}
 
 	/**
@@ -86,7 +89,7 @@ public final class CqlIdentifier implements Comparable<CqlIdentifier>, Serializa
 	 * @see #cqlId(String)
 	 */
 	public CqlIdentifier(CharSequence identifier) {
-		this(identifier, false);
+		this(identifier, false, new CasePreservingCqlNamingStrategy());
 	}
 
 	/**
@@ -102,19 +105,21 @@ public final class CqlIdentifier implements Comparable<CqlIdentifier>, Serializa
 	 * @see #cqlId(String)
 	 * @see #quotedCqlId(String)
 	 */
-	public CqlIdentifier(CharSequence identifier, boolean forceQuote) {
-		setIdentifier(identifier, forceQuote);
+	public CqlIdentifier(CharSequence identifier, boolean forceQuote, CqlNamingStrategy namingStrategy) {
+		setIdentifier(identifier, forceQuote, namingStrategy);
 	}
 
 	/**
 	 * Tests & sets the given identifier.
 	 */
-	private void setIdentifier(CharSequence identifier, boolean forceQuoting) {
+	private void setIdentifier(CharSequence identifier, boolean forceQuoting, CqlNamingStrategy namingStrategy) {
 
 		Assert.notNull(identifier);
 
 		String string = identifier.toString();
 		Assert.hasText(string);
+
+		string = namingStrategy.transform(string);
 
 		if (forceQuoting || isQuotedIdentifier(string)) {
 			this.unquoted = string;
