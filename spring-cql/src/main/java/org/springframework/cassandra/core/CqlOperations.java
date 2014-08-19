@@ -137,7 +137,6 @@ public interface CqlOperations {
 	 * 
 	 * @param cql The CQL String to execute
 	 * @param listener The {@link Runnable} to register with the {@link ResultSetFuture}
-	 * 
 	 * @see queryAsyncronously for Reads
 	 */
 	void executeAsynchronously(String cql, Runnable listener) throws DataAccessException;
@@ -148,7 +147,6 @@ public interface CqlOperations {
 	 * @param cql The CQL String to execute
 	 * @param listener The {@link Runnable} to register with the {@link ResultSetFuture}
 	 * @param executor The {@link Executor} to regsiter with the {@link ResultSetFuture}
-	 * 
 	 * @see queryAsyncronously for Reads
 	 */
 	void executeAsynchronously(String cql, Runnable listener, Executor executor) throws DataAccessException;
@@ -158,7 +156,6 @@ public interface CqlOperations {
 	 * 
 	 * @param cql The CQL String to execute
 	 * @param listener The {@link AsynchronousQueryListener} to register with the {@link ResultSetFuture}
-	 * 
 	 * @see queryAsyncronously for Reads
 	 */
 	void executeAsynchronously(String cql, AsynchronousQueryListener listener) throws DataAccessException;
@@ -169,7 +166,6 @@ public interface CqlOperations {
 	 * @param cql The CQL String to execute
 	 * @param listener The {@link AsynchronousQueryListener} to register with the {@link ResultSetFuture}
 	 * @param executor The {@link Executor} to regsiter with the {@link ResultSetFuture}
-	 * 
 	 * @see queryAsyncronously for Reads
 	 */
 	void executeAsynchronously(String cql, AsynchronousQueryListener listener, Executor executor)
@@ -303,7 +299,6 @@ public interface CqlOperations {
 	 * 
 	 * @param cql The Query
 	 * @param listener {@link Runnable} listener for handling the query in a separate thread
-	 * 
 	 * @see #queryAsynchronously(String, AsynchronousQueryListener)
 	 */
 	void queryAsynchronously(String cql, Runnable listener);
@@ -317,7 +312,6 @@ public interface CqlOperations {
 	 * 
 	 * @param select The Select Query
 	 * @param listener {@link Runnable} listener for handling the query in a separate thread
-	 * 
 	 * @see #queryAsynchronously(Select, AsynchronousQueryListener)
 	 */
 	void queryAsynchronously(Select select, Runnable listener);
@@ -457,7 +451,6 @@ public interface CqlOperations {
 	 * 
 	 * @param cql The Query
 	 * @param rse The implementation for extracting the ResultSet
-	 * 
 	 * @return Type <T> specified in the ResultSetExtractor
 	 * @throws DataAccessException
 	 */
@@ -468,7 +461,6 @@ public interface CqlOperations {
 	 * 
 	 * @param select The SelectQuery
 	 * @param rse The implementation for extracting the ResultSet
-	 * 
 	 * @return Type <T> specified in the ResultSetExtractor
 	 * @throws DataAccessException
 	 */
@@ -480,7 +472,6 @@ public interface CqlOperations {
 	 * @param cql The Query
 	 * @param rse The implementation for extracting the ResultSet
 	 * @param options Query Options
-	 * 
 	 * @return
 	 * @throws DataAccessException
 	 */
@@ -570,7 +561,6 @@ public interface CqlOperations {
 
 	/**
 	 * Executes the provided CQL Query, and maps <b>ONE</b> Row returned with the supplied RowMapper.
-	 * 
 	 * <p>
 	 * This expects only ONE row to be returned. More than one Row will cause an Exception to be thrown.
 	 * </p>
@@ -583,8 +573,21 @@ public interface CqlOperations {
 	<T> T queryForObject(String cql, RowMapper<T> rowMapper) throws DataAccessException;
 
 	/**
-	 * Executes the provided Select Query, and maps <b>ONE</b> Row returned with the supplied RowMapper.
+	 * Executes the provided CQL Query, and maps <b>ONE</b> Row returned with the supplied RowMapper.
+	 * <p>
+	 * This expects only ONE row to be returned. More than one Row will cause an Exception to be thrown.
+	 * </p>
 	 * 
+	 * @param cql The Query
+	 * @param options The {@link QueryOptions} to use
+	 * @param rowMapper The implementation for convert the Row to <T>
+	 * @return Object<T>
+	 * @throws DataAccessException
+	 */
+	<T> T queryForObject(String cql, RowMapper<T> rowMapper, QueryOptions options) throws DataAccessException;
+
+	/**
+	 * Executes the provided Select Query, and maps <b>ONE</b> Row returned with the supplied RowMapper.
 	 * <p>
 	 * This expects only ONE row to be returned. More than one Row will cause an Exception to be thrown.
 	 * </p>
@@ -619,6 +622,17 @@ public interface CqlOperations {
 	<T> T queryForObject(String cql, Class<T> requiredType) throws DataAccessException;
 
 	/**
+	 * Executes the provided query and tries to return the first column of the first Row as a Class<T>.
+	 * 
+	 * @param cql The Query
+	 * @param options The {@link QueryOptions} to use
+	 * @param requiredType Valid Class that Cassandra Data Types can be converted to.
+	 * @return The Object<T> - item [0,0] in the result table of the query.
+	 * @throws DataAccessException
+	 */
+	<T> T queryForObject(String cql, Class<T> requiredType, QueryOptions options) throws DataAccessException;
+
+	/**
 	 * Executes the provided Select query and tries to return the first column of the first Row as a Class<T>.
 	 * 
 	 * @param select The Select Query
@@ -649,6 +663,17 @@ public interface CqlOperations {
 	 * @throws DataAccessException
 	 */
 	Map<String, Object> queryForMap(String cql) throws DataAccessException;
+
+	/**
+	 * Executes the provided CQL Query and maps <b>ONE</b> Row to a basic Map of Strings and Objects. If more than one Row
+	 * is returned from the Query, an exception will be thrown.
+	 * 
+	 * @param cql The Query
+	 * @param options The {@link QueryOptions} to use
+	 * @return Map representing the results of the Query
+	 * @throws DataAccessException
+	 */
+	Map<String, Object> queryForMap(String cql, QueryOptions options) throws DataAccessException;
 
 	/**
 	 * Executes the provided Select Query and maps <b>ONE</b> Row to a basic Map of Strings and Objects. If more than one
@@ -683,6 +708,18 @@ public interface CqlOperations {
 	<T> List<T> queryForList(String cql, Class<T> elementType) throws DataAccessException;
 
 	/**
+	 * Executes the provided CQL and returns all values in the first column of the Results as a List of the Type in the
+	 * second argument.
+	 * 
+	 * @param cql The Query
+	 * @param elementType Type to cast the data values to
+	 * @param QueryOptions The {@link QueryOptions} to use
+	 * @return List of elementType
+	 * @throws DataAccessException
+	 */
+	<T> List<T> queryForList(String cql, Class<T> elementType, QueryOptions options) throws DataAccessException;
+
+	/**
 	 * Executes the provided Select Query and returns all values in the first column of the Results as a List of the Type
 	 * in the second argument.
 	 * 
@@ -714,6 +751,17 @@ public interface CqlOperations {
 	 * @throws DataAccessException
 	 */
 	List<Map<String, Object>> queryForListOfMap(String cql) throws DataAccessException;
+
+	/**
+	 * Executes the provided CQL and converts the results to a basic List of Maps. Each element in the List represents a
+	 * Row returned from the Query. Each Row's columns are put into the map as column/value.
+	 * 
+	 * @param cql The Query
+	 * @param options The {@link QueryOptions} to use
+	 * @return List of Maps with the query results
+	 * @throws DataAccessException
+	 */
+	List<Map<String, Object>> queryForListOfMap(String cql, QueryOptions options) throws DataAccessException;
 
 	/**
 	 * Executes the provided Select Query and converts the results to a basic List of Maps. Each element in the List
@@ -1036,7 +1084,6 @@ public interface CqlOperations {
 	/**
 	 * This is an operation designed for high performance writes. The cql is used to create a PreparedStatement once, then
 	 * all row values are bound to the single PreparedStatement and executed against the Session.
-	 * 
 	 * <p>
 	 * This is used internally by the other ingest() methods, but can be used if you want to write your own RowIterator.
 	 * The Object[] length returned by the next() implementation must match the number of bind variables in the CQL.
@@ -1051,7 +1098,6 @@ public interface CqlOperations {
 	/**
 	 * This is an operation designed for high performance writes. The cql is used to create a PreparedStatement once, then
 	 * all row values are bound to the single PreparedStatement and executed against the Session.
-	 * 
 	 * <p>
 	 * This is used internally by the other ingest() methods, but can be used if you want to write your own RowIterator.
 	 * The Object[] length returned by the next() implementation must match the number of bind variables in the CQL.
@@ -1065,7 +1111,6 @@ public interface CqlOperations {
 	/**
 	 * This is an operation designed for high performance writes. The cql is used to create a PreparedStatement once, then
 	 * all row values are bound to the single PreparedStatement and executed against the Session.
-	 * 
 	 * <p>
 	 * The List<?> length must match the number of bind variables in the CQL.
 	 * </p>
@@ -1079,7 +1124,6 @@ public interface CqlOperations {
 	/**
 	 * This is an operation designed for high performance writes. The cql is used to create a PreparedStatement once, then
 	 * all row values are bound to the single PreparedStatement and executed against the Session.
-	 * 
 	 * <p>
 	 * The List<?> length must match the number of bind variables in the CQL.
 	 * </p>
@@ -1092,7 +1136,6 @@ public interface CqlOperations {
 	/**
 	 * This is an operation designed for high performance writes. The cql is used to create a PreparedStatement once, then
 	 * all row values are bound to the single PreparedStatement and executed against the Session.
-	 * 
 	 * <p>
 	 * The Object[] length of the nested array must match the number of bind variables in the CQL.
 	 * </p>
@@ -1105,7 +1148,6 @@ public interface CqlOperations {
 	/**
 	 * This is an operation designed for high performance writes. The cql is used to create a PreparedStatement once, then
 	 * all row values are bound to the single PreparedStatement and executed against the Session.
-	 * 
 	 * <p>
 	 * The Object[] length of the nested array must match the number of bind variables in the CQL.
 	 * </p>

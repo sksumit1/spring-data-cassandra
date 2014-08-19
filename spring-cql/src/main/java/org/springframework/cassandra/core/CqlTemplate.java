@@ -80,7 +80,6 @@ import com.datastax.driver.core.querybuilder.Update;
  * extraction. This class execute CQL Queries, provides different ways to extract/map results, and provides Exception
  * translation to the generic, more informative exception hierarchy defined in the <code>org.springframework.dao</code>
  * package.
- * 
  * <p>
  * For working with POJOs, use the {@link CassandraDataTemplate}.
  * </p>
@@ -191,10 +190,15 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 	}
 
+	protected QueryOptions defaultQueryOptions;
+
 	/**
 	 * Blank constructor. You must wire in the Session before use.
 	 */
-	public CqlTemplate() {
+	public CqlTemplate() {}
+
+	public CqlTemplate(QueryOptions defaultQueryOptions) {
+		setDefaultQueryOptions(defaultQueryOptions);
 	}
 
 	/**
@@ -204,7 +208,11 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	 */
 	public CqlTemplate(Session session) {
 		setSession(session);
-		afterPropertiesSet();
+	}
+
+	public CqlTemplate(Session session, QueryOptions defaultQueryOptions) {
+		setSession(session);
+		setDefaultQueryOptions(defaultQueryOptions);
 	}
 
 	@Override
@@ -448,27 +456,52 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 	@Override
 	public List<Map<String, Object>> queryForListOfMap(String cql) throws DataAccessException {
-		return processListOfMap(doExecute(cql, null));
+		return queryForListOfMap(cql, null);
+	}
+
+	@Override
+	public List<Map<String, Object>> queryForListOfMap(String cql, QueryOptions options) throws DataAccessException {
+		return processListOfMap(doExecute(cql, options));
 	}
 
 	@Override
 	public <T> List<T> queryForList(String cql, Class<T> elementType) throws DataAccessException {
-		return processList(doExecute(cql, null), elementType);
+		return queryForList(cql, elementType, null);
+	}
+
+	@Override
+	public <T> List<T> queryForList(String cql, Class<T> elementType, QueryOptions options) throws DataAccessException {
+		return processList(doExecute(cql, options), elementType);
 	}
 
 	@Override
 	public Map<String, Object> queryForMap(String cql) throws DataAccessException {
-		return processMap(doExecute(cql, null));
+		return queryForMap(cql, null);
+	}
+
+	@Override
+	public Map<String, Object> queryForMap(String cql, QueryOptions options) throws DataAccessException {
+		return processMap(doExecute(cql, options));
 	}
 
 	@Override
 	public <T> T queryForObject(String cql, Class<T> requiredType) throws DataAccessException {
-		return processOne(doExecute(cql, null), requiredType);
+		return queryForObject(cql, requiredType, null);
+	}
+
+	@Override
+	public <T> T queryForObject(String cql, Class<T> requiredType, QueryOptions options) throws DataAccessException {
+		return processOne(doExecute(cql, options), requiredType);
 	}
 
 	@Override
 	public <T> T queryForObject(String cql, RowMapper<T> rowMapper) throws DataAccessException {
-		return processOne(doExecute(cql, null), rowMapper);
+		return queryForObject(cql, rowMapper, null);
+	}
+
+	@Override
+	public <T> T queryForObject(String cql, RowMapper<T> rowMapper, QueryOptions options) throws DataAccessException {
+		return processOne(doExecute(cql, options), rowMapper);
 	}
 
 	/**
@@ -495,7 +528,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	protected ResultSet doExecute(String cql, QueryOptions options) {
-		return doExecute(addQueryOptions(new SimpleStatement(cql), options));
+		return doExecute(addQueryOptions(new SimpleStatement(cql), options != null ? options : defaultQueryOptions));
 	}
 
 	/**
@@ -1372,4 +1405,11 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 		return processListOfMap(doExecute(select));
 	}
 
+	public void setDefaultQueryOptions(QueryOptions queryOptions) {
+		this.defaultQueryOptions = queryOptions;
+	}
+
+	public QueryOptions getDefaultQueryOptions() {
+		return defaultQueryOptions;
+	}
 }
