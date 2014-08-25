@@ -54,6 +54,8 @@ public interface CqlOperations {
 	/**
 	 * Executes the supplied {@link SessionCallback} in the current Template Session. The implementation of
 	 * SessionCallback can decide whether or not to <code>execute()</code> or <code>executeAsync()</code> the operation.
+	 * <p/>
+	 * For nonmutating operations (<code>SELECT</code>), see the various <code>query*(String,..)</code> methods.
 	 * 
 	 * @param sessionCallback
 	 * @return Type<T> defined in the SessionCallback
@@ -61,22 +63,42 @@ public interface CqlOperations {
 	<T> T execute(SessionCallback<T> sessionCallback) throws DataAccessException;
 
 	/**
-	 * Executes the supplied CQL Query and returns nothing.
+	 * Executes the supplied CQL mutating query (<code>INSERT</code>, <code>UPDATE</code>, <code>DELETE</code>, etc) using
+	 * this template's default {@link QueryOptions} (if set) and returns nothing.
+	 * <p/>
+	 * For nonmutating operations (<code>SELECT</code>), see the various <code>query*(String,..)</code> methods.
+	 * <p/>
+	 * <em>NOTE:</em> Even though this method is intended only to be used with write operations, only default <i>query</i>
+	 * options ({@link QueryOptions}) will be used (if set), not default <i>write</i> options ({@link WriteOptions}), due
+	 * to limitations in the current underlying Java driver.
 	 * 
 	 * @param cql
+	 * @deprecated Prefer {@link #execute(Insert)}, {@link #execute(Update)}, {@link #execute(Delete)}, etc.
 	 */
+	@Deprecated
 	void execute(String cql) throws DataAccessException;
 
 	/**
-	 * Executes the supplied CQL Query and returns nothing.
+	 * Executes the supplied CQL mutating query (<code>INSERT</code>, <code>UPDATE</code>, <code>DELETE</code>, etc) using
+	 * the given {@link QueryOptions} and returns nothing.
+	 * <p/>
+	 * For nonmutating operations (<code>SELECT</code>), see the various <code>query*(String,..)</code> methods.
+	 * <p/>
+	 * <em>NOTE:</em> Even though this method is intended only to be used with write operations, only <i>query</i> options
+	 * ({@link QueryOptions}) will be used (if given) due to limitations in the current underlying Java driver.
 	 * 
 	 * @param cql
 	 * @param options may be null
+	 * @deprecated Prefer {@link #execute(Insert)}, {@link #execute(Update)}, {@link #execute(Delete)}, etc.
 	 */
+	@Deprecated
 	void execute(String cql, QueryOptions options) throws DataAccessException;
 
 	/**
-	 * Executes the supplied Query and returns nothing.
+	 * Executes the supplied CQL mutating statement (<code>INSERT</code>, <code>UPDATE</code>, <code>DELETE</code>, etc)
+	 * using this template's default {@link QueryOptions} and returns nothing.
+	 * <p/>
+	 * For nonmutating operations (<code>SELECT</code>), see the various <code>query*(String,..)</code> methods.
 	 * 
 	 * @param query The {@link Statement} to execute
 	 */
@@ -118,56 +140,90 @@ public interface CqlOperations {
 	void execute(Truncate truncate) throws DataAccessException;
 
 	/**
-	 * Executes the supplied Query Asynchronously and returns nothing.
+	 * Executes the supplied mutating query (<code>INSERT</code>, <code>UPDATE</code>, <code>DELETE</code>, etc)
+	 * asynchronously using this template's default {@link QueryOptions} and returns nothing.
+	 * <p/>
+	 * For nonmutating operations (<code>SELECT</code>), see the various <code>queryAsynchronously</code> methods.
 	 * 
 	 * @param cql The CQL String to execute
+	 * @deprecated Prefer {@link #executeAsynchronously(Insert)}, {@link #executeAsynchronously(Update)} and their
+	 *             overloads
 	 */
+	@Deprecated
 	void executeAsynchronously(String cql) throws DataAccessException;
 
 	/**
-	 * Executes the supplied Query Asynchronously and returns nothing.
+	 * Executes the supplied mutating CQL query (<code>INSERT</code>, <code>UPDATE</code>, <code>DELETE</code>, etc)
+	 * asynchronously using the given {@link QueryOptions} and returns nothing.
+	 * <p/>
+	 * For nonmutating operations (<code>SELECT</code>), see the various <code>queryAsynchronously</code> methods.
 	 * 
 	 * @param cql The CQL String to execute
 	 * @param options The {@link QueryOptions} to use. Only applies to cql statements that can use QueryOptions.
+	 * @deprecated Prefer {@link #executeAsynchronously(Insert)}, {@link #executeAsynchronously(Update)} and their
+	 *             overloads
 	 */
+	@Deprecated
 	void executeAsynchronously(String cql, QueryOptions options) throws DataAccessException;
 
 	/**
-	 * Executes the supplied Query Asynchronously and returns nothing.
+	 * Executes the supplied mutating CQL query (<code>INSERT</code>, <code>UPDATE</code>, <code>DELETE</code>, etc)
+	 * asynchronously using this template's default {@link QueryOptions} and returns nothing.
+	 * <p/>
+	 * For nonmutating operations (<code>SELECT</code>), see the various <code>queryAsynchronously</code> methods.
 	 * 
 	 * @param cql The CQL String to execute
 	 * @param listener The {@link Runnable} to register with the {@link ResultSetFuture}
-	 * @see queryAsyncronously for Reads
+	 * @deprecated Prefer {@link #executeAsynchronously(Insert)}, {@link #executeAsynchronously(Update)} and their
+	 *             overloads
 	 */
+	@Deprecated
 	void executeAsynchronously(String cql, Runnable listener) throws DataAccessException;
 
 	/**
-	 * Executes the supplied Query Asynchronously and returns nothing.
+	 * Executes the supplied mutating CQL query (<code>INSERT</code>, <code>UPDATE</code>, <code>DELETE</code>, etc)
+	 * asynchronously using this template's default {@link QueryOptions} and returns nothing.
+	 * <p/>
+	 * For nonmutating operations (<code>SELECT</code>), see the various <code>queryAsynchronously</code> methods.
 	 * 
 	 * @param cql The CQL String to execute
 	 * @param listener The {@link Runnable} to register with the {@link ResultSetFuture}
-	 * @param executor The {@link Executor} to regsiter with the {@link ResultSetFuture}
-	 * @see queryAsyncronously for Reads
+	 * @param executor The {@link Executor} to register with the {@link ResultSetFuture}
+	 * @deprecated Prefer {@link #executeAsynchronously(Insert)}, {@link #executeAsynchronously(Update)} and their
+	 *             overloads
 	 */
+	@Deprecated
 	void executeAsynchronously(String cql, Runnable listener, Executor executor) throws DataAccessException;
 
 	/**
-	 * Executes the supplied Query Asynchronously and returns nothing.
+	 * Executes the supplied mutating CQL query (<code>INSERT</code>, <code>UPDATE</code>, <code>DELETE</code>, etc)
+	 * asynchronously using this template's default {@link QueryOptions} and returns nothing.
+	 * <p/>
+	 * For nonmutating operations (<code>SELECT</code>), see the various <code>queryAsynchronously</code> methods.
 	 * 
 	 * @param cql The CQL String to execute
 	 * @param listener The {@link AsynchronousQueryListener} to register with the {@link ResultSetFuture}
 	 * @see queryAsyncronously for Reads
+	 * @deprecated Prefer {@link #executeAsynchronously(Insert)}, {@link #executeAsynchronously(Update)} and their
+	 *             overloads
 	 */
+	@Deprecated
 	void executeAsynchronously(String cql, AsynchronousQueryListener listener) throws DataAccessException;
 
 	/**
-	 * Executes the supplied Query Asynchronously and returns nothing.
+	 * Executes the supplied mutating CQL query (<code>INSERT</code>, <code>UPDATE</code>, <code>DELETE</code>, etc)
+	 * asynchronously using this template's default {@link QueryOptions} and returns nothing.
+	 * <p/>
+	 * For nonmutating operations (<code>SELECT</code>), see the various <code>queryAsynchronously</code> methods.
 	 * 
 	 * @param cql The CQL String to execute
 	 * @param listener The {@link AsynchronousQueryListener} to register with the {@link ResultSetFuture}
 	 * @param executor The {@link Executor} to regsiter with the {@link ResultSetFuture}
 	 * @see queryAsyncronously for Reads
+	 * @deprecated Prefer {@link #executeAsynchronously(Insert)}, {@link #executeAsynchronously(Update)} and their
+	 *             overloads
 	 */
+	@Deprecated
 	void executeAsynchronously(String cql, AsynchronousQueryListener listener, Executor executor)
 			throws DataAccessException;
 
@@ -207,35 +263,53 @@ public interface CqlOperations {
 	void executeAsynchronously(Batch batch) throws DataAccessException;
 
 	/**
-	 * Executes the supplied CQL Query Asynchronously and returns nothing.
+	 * Executes the supplied mutating CQL {@link Statement} (<code>INSERT</code>, <code>UPDATE</code>, <code>DELETE</code>
+	 * , etc) asynchronously and returns nothing.
+	 * <p/>
+	 * For nonmutating operations (<code>SELECT</code>), see the various <code>queryAsynchronously</code> methods.
 	 * 
 	 * @param query The {@link Statement} to execute
 	 */
 	void executeAsynchronously(Statement query) throws DataAccessException;
 
 	/**
-	 * Executes the supplied CQL Query Asynchronously and returns nothing.
+	 * Executes the supplied mutating CQL {@link Statement} (<code>INSERT</code>, <code>UPDATE</code>, <code>DELETE</code>
+	 * , etc) asynchronously and returns nothing. The given {@link Runnable} is execute upon query completion.
+	 * <p/>
+	 * For nonmutating operations (<code>SELECT</code>), see the various <code>queryAsynchronously</code> methods.
 	 * 
 	 * @param query The {@link Statement} to execute
 	 */
 	void executeAsynchronously(Statement query, Runnable runnable) throws DataAccessException;
 
 	/**
-	 * Executes the supplied CQL Query Asynchronously and returns nothing.
+	 * Executes the supplied mutating CQL {@link Statement} (<code>INSERT</code>, <code>UPDATE</code>, <code>DELETE</code>
+	 * , etc) asynchronously and returns nothing. The given {@link AsynchronousQueryListener} is invoked upon query
+	 * completion.
+	 * <p/>
+	 * For nonmutating operations (<code>SELECT</code>), see the various <code>queryAsynchronously</code> methods.
 	 * 
 	 * @param query The {@link Statement} to execute
 	 */
 	void executeAsynchronously(Statement query, AsynchronousQueryListener listener) throws DataAccessException;
 
 	/**
-	 * Executes the supplied CQL Query Asynchronously and returns nothing.
+	 * Executes the supplied mutating CQL {@link Statement} (<code>INSERT</code>, <code>UPDATE</code>, <code>DELETE</code>
+	 * , etc) asynchronously using and returns nothing. The given {@link Runnable} is executed via the given
+	 * {@link Executor} upon query completion.
+	 * <p/>
+	 * For nonmutating operations (<code>SELECT</code>), see the various <code>queryAsynchronously</code> methods.
 	 * 
 	 * @param query The {@link Statement} to execute
 	 */
 	void executeAsynchronously(Statement query, Runnable runnable, Executor executor) throws DataAccessException;
 
 	/**
-	 * Executes the supplied CQL Query Asynchronously and returns nothing.
+	 * Executes the supplied mutating CQL {@link Statement} (<code>INSERT</code>, <code>UPDATE</code>, <code>DELETE</code>
+	 * , etc) asynchronously and returns nothing. The given {@link AsynchronousQueryListener} is invoked via the given
+	 * {@link Executor} upon query completion.
+	 * <p/>
+	 * For nonmutating operations (<code>SELECT</code>), see the various <code>queryAsynchronously</code> methods.
 	 * 
 	 * @param query The {@link Statement} to execute
 	 */
@@ -243,8 +317,8 @@ public interface CqlOperations {
 			throws DataAccessException;
 
 	/**
-	 * Executes the provided CQL Query, and extracts the results with the ResultSetExtractor. This uses default Query
-	 * Options when extracting the ResultSet.
+	 * Executes the provided nonmutating CQL query (<code>SELECT</code>) using this template's default
+	 * {@link QueryOptions} (if set), and extracts the results with the given {@link ResultSetExtractor}.
 	 * 
 	 * @param cql The Query
 	 * @param rse The implementation for extracting the ResultSet
@@ -255,27 +329,27 @@ public interface CqlOperations {
 	<T> T queryAsynchronously(String cql, ResultSetExtractor<T> rse, Long timeout, TimeUnit timeUnit);
 
 	/**
-	 * Executes the provided CQL Query, and extracts the results with the ResultSetExtractor.
+	 * Executes the provided nonmutating CQL query (<code>SELECT</code>) using the given {@link QueryOptions}, and
+	 * extracts the results with the {@link ResultSetExtractor}.
 	 * 
 	 * @param cql The Query
 	 * @param rse The implementation for extracting the ResultSet
 	 * @param timeout Time to wait for results
 	 * @param timeUnit Time unit to wait for results
 	 * @param options Query Options
-	 * @return
 	 */
 	<T> T queryAsynchronously(String cql, ResultSetExtractor<T> rse, Long timeout, TimeUnit timeUnit, QueryOptions options);
 
 	/**
-	 * Executes the provided CQL Query and returns the ResultSetFuture for user processing.
+	 * Executes the provided nonmutating CQL query (<code>SELECT</code>) using this template's default
+	 * {@link QueryOptions} (if set), and returns the corresponding {@link ResultSetFuture}.
 	 * 
 	 * @param cql The Query
-	 * @return
 	 */
 	ResultSetFuture queryAsynchronously(String cql);
 
 	/**
-	 * Executes the provided CQL Select and returns the ResultSetFuture for user processing.
+	 * Executes the provided CQL Select and returns the {@link ResultSetFuture} for user processing.
 	 * 
 	 * @param cql The {@link Select}
 	 * @return
@@ -283,7 +357,8 @@ public interface CqlOperations {
 	ResultSetFuture queryAsynchronously(Select select);
 
 	/**
-	 * Executes the provided CQL Query and returns the ResultSetFuture for user processing.
+	 * Executes the provided nonmutating CQL query (<code>SELECT</code>) using the given {@link QueryOptions} (if set),
+	 * and returns the corresponding {@link ResultSetFuture}.
 	 * 
 	 * @param cql The Query
 	 * @param options Query Options
@@ -292,7 +367,8 @@ public interface CqlOperations {
 	ResultSetFuture queryAsynchronously(String cql, QueryOptions options);
 
 	/**
-	 * Executes the provided CQL Query with the provided {@link Runnable}, which is started after the query has completed.
+	 * Executes the provided nonmutating CQL query (<code>SELECT</code>) using this template's default
+	 * {@link QueryOptions} (if set), and returns nothing. The given {@link Runnable} is invoked upon query completion.
 	 * <p/>
 	 * A more useful method than this one is {@link #queryAsynchronously(String, AsynchronousQueryListener)}, where you're
 	 * given the {@link ResultSetFuture} after the query has been executed.
@@ -304,7 +380,7 @@ public interface CqlOperations {
 	void queryAsynchronously(String cql, Runnable listener);
 
 	/**
-	 * Executes the provided CQL Select with the provided {@link Runnable}, which is started after the query has
+	 * Executes the provided CQL {@link Select} with the provided {@link Runnable}, which is started after the query has
 	 * completed.
 	 * <p/>
 	 * A more useful method than this one is {@link #queryAsynchronously(Select, AsynchronousQueryListener)}, where you're
@@ -317,9 +393,11 @@ public interface CqlOperations {
 	void queryAsynchronously(Select select, Runnable listener);
 
 	/**
-	 * Executes the provided CQL Query with the provided listener. This is preferred over the same method that takes a
-	 * {@link Runnable}. The {@link AsynchronousQueryListener} gives you access to the {@link ResultSetFuture} once the
-	 * query is completed for optimal flexibility.
+	 * Executes the provided nonmutating CQL query (<code>SELECT</code>) using this template's default
+	 * {@link QueryOptions} (if set), and returns nothing. The given {@link Runnable} is invoked upon query completion.
+	 * <p/>
+	 * This method is preferred over {@link #queryAsynchronously(String,Runnable)}, because the
+	 * {@link AsynchronousQueryListener} gives you access to the {@link ResultSetFuture} once the query is completed.
 	 * 
 	 * @param cql The Query
 	 * @param listener {@link AsynchronousQueryListener} for handling the query's {@link ResultSetFuture} in a separate
@@ -339,27 +417,37 @@ public interface CqlOperations {
 	void queryAsynchronously(Select select, AsynchronousQueryListener listener);
 
 	/**
-	 * Executes the provided CQL Query with the Runnable implementations using the Query Options.
+	 * Executes the provided nonmutating CQL query (<code>SELECT</code>) using the given {@link QueryOptions} and returns
+	 * nothing. The given {@link Runnable} is invoked upon query completion.
 	 * 
 	 * @param cql The Query
 	 * @param options Query Option
 	 * @param listener Runnable Listener for handling the query in a separate thread
+	 * @see #queryAsynchronously(String, AsynchronousQueryListener, QueryOptions)
 	 */
 	void queryAsynchronously(String cql, Runnable listener, QueryOptions options);
 
 	/**
-	 * Executes the provided CQL Query with the provided Listener and Query Options. This is preferred over the same
-	 * method that takes a plain Runnable. The {@link AsynchronousQueryListener} gives you access to the
-	 * {@link ResultSetFuture} once the query is completed for optimal flexibility.
+	 * Executes the provided nonmutating CQL query (<code>SELECT</code>) using the given {@link QueryOptions}, and returns
+	 * nothing. The given {@link AsynchronousQueryListener} is invoked upon query completion.
+	 * <p/>
+	 * This method is preferred over {@link #queryAsynchronously(String,Runnable,QueryOptions)}, because the
+	 * {@link AsynchronousQueryListener} gives you access to the {@link ResultSetFuture} once the query is completed.
 	 * 
 	 * @param cql The Query
-	 * @param options Query Option
+	 * @param listener The {@link AsynchronousQueryListener}
+	 * @param options Query Options
 	 * @param listener Runnable Listener for handling the query in a separate thread
 	 */
 	void queryAsynchronously(String cql, AsynchronousQueryListener listener, QueryOptions options);
 
 	/**
-	 * Executes the provided CQL Query with the provided Executor and Runnable implementations.
+	 * Executes the provided nonmutating CQL query (<code>SELECT</code>) using this template's default
+	 * {@link QueryOptions} (if set), and returns nothing. The given {@link Runnable} is invoked upon query completion via
+	 * the given {@link Executor}.
+	 * <p/>
+	 * A more useful method than this one is {@link #queryAsynchronously(String, AsynchronousQueryListener, Executor)},
+	 * where you're given the {@link ResultSetFuture} after the query has been executed.
 	 * 
 	 * @param cql The Query
 	 * @param listener Runnable Listener for handling the query in a separate thread
@@ -377,12 +465,14 @@ public interface CqlOperations {
 	void queryAsynchronously(Select select, Runnable listener, Executor executor);
 
 	/**
-	 * Executes the provided CQL Query with the provided listener and executor. This is preferred over the same method
-	 * that takes a plain Runnable. The {@link AsynchronousQueryListener} gives you access to the {@link ResultSetFuture}
-	 * once the query is completed for optimal flexibility.
+	 * Executes the provided nonmutating CQL query (<code>SELECT</code>) using this template's default
+	 * {@link QueryOptions} (if set), and returns nothing. The given {@link AsynchronousQueryListener} is invoked upon
+	 * query completion via the given {@link Executor}.
+	 * <p/>
+	 * This method is preferred over {@link #queryAsynchronously(String,Runnable,Executor)}, because the
+	 * {@link AsynchronousQueryListener} gives you access to the {@link ResultSetFuture} once the query is completed.
 	 * 
 	 * @param cql The Query
-	 * @param options Query Option
 	 * @param listener Runnable Listener for handling the query in a separate thread
 	 * @param executor To execute the Runnable Listener
 	 */
@@ -400,7 +490,8 @@ public interface CqlOperations {
 	void queryAsynchronously(Select select, AsynchronousQueryListener listener, Executor executor);
 
 	/**
-	 * Executes the provided CQL Query with the provided Executor and Runnable implementations.
+	 * Executes the provided nonmutating CQL query (<code>SELECT</code>) using the given {@link QueryOptions} and returns
+	 * nothing. The given {@link Runnable} is invoked upon query completion via the given {@link Executor}.
 	 * 
 	 * @param cql The Query
 	 * @param options Query Option
@@ -410,9 +501,12 @@ public interface CqlOperations {
 	void queryAsynchronously(String cql, Runnable listener, QueryOptions options, Executor executor);
 
 	/**
-	 * Executes the provided CQL Query with the provided Listener, Executor and Query Options. This is preferred over the
-	 * same method that takes a plain Runnable. The {@link AsynchronousQueryListener} gives you access to the
-	 * {@link ResultSetFuture} once the query is completed for optimal flexibility.
+	 * Executes the provided nonmutating CQL query (<code>SELECT</code>) using the given {@link QueryOptions}, and returns
+	 * nothing. The given {@link AsynchronousQueryListener} is invoked upon query completion via the given
+	 * {@link Executor}.
+	 * <p/>
+	 * This method is preferred over {@link #queryAsynchronously(String,Runnable,QueryOptions)}, because the
+	 * {@link AsynchronousQueryListener} gives you access to the {@link ResultSetFuture} once the query is completed.
 	 * 
 	 * @param cql
 	 * @param listener

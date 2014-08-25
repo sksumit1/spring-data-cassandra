@@ -190,6 +190,9 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 	}
 
+	/**
+	 * Default {@link QueryOptions} to use for non-mutating operations.
+	 */
 	protected QueryOptions defaultQueryOptions;
 
 	/**
@@ -413,13 +416,13 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	@Override
 	public <T> T query(String cql, ResultSetExtractor<T> rse, QueryOptions options) throws DataAccessException {
 		Assert.notNull(cql);
-		ResultSet rs = doExecute(cql, options);
+		ResultSet rs = doQuery(cql, options);
 		return rse.extractData(rs);
 	}
 
 	@Override
 	public void query(String cql, RowCallbackHandler rch, QueryOptions options) throws DataAccessException {
-		process(doExecute(cql, options), rch);
+		process(doQuery(cql, options), rch);
 	}
 
 	@Override
@@ -429,7 +432,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 	@Override
 	public <T> List<T> query(String cql, RowMapper<T> rowMapper, QueryOptions options) throws DataAccessException {
-		return process(doExecute(cql, options), rowMapper);
+		return process(doQuery(cql, options), rowMapper);
 	}
 
 	@Override
@@ -461,7 +464,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 	@Override
 	public List<Map<String, Object>> queryForListOfMap(String cql, QueryOptions options) throws DataAccessException {
-		return processListOfMap(doExecute(cql, options));
+		return processListOfMap(doQuery(cql, options));
 	}
 
 	@Override
@@ -471,7 +474,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 	@Override
 	public <T> List<T> queryForList(String cql, Class<T> elementType, QueryOptions options) throws DataAccessException {
-		return processList(doExecute(cql, options), elementType);
+		return processList(doQuery(cql, options), elementType);
 	}
 
 	@Override
@@ -481,7 +484,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 	@Override
 	public Map<String, Object> queryForMap(String cql, QueryOptions options) throws DataAccessException {
-		return processMap(doExecute(cql, options));
+		return processMap(doQuery(cql, options));
 	}
 
 	@Override
@@ -491,7 +494,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 	@Override
 	public <T> T queryForObject(String cql, Class<T> requiredType, QueryOptions options) throws DataAccessException {
-		return processOne(doExecute(cql, options), requiredType);
+		return processOne(doQuery(cql, options), requiredType);
 	}
 
 	@Override
@@ -501,7 +504,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 	@Override
 	public <T> T queryForObject(String cql, RowMapper<T> rowMapper, QueryOptions options) throws DataAccessException {
-		return processOne(doExecute(cql, options), rowMapper);
+		return processOne(doQuery(cql, options), rowMapper);
 	}
 
 	/**
@@ -523,16 +526,37 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 		}
 	}
 
+	protected ResultSet doQuery(String cql) {
+		return doQuery(cql, null);
+	}
+
+	protected ResultSet doQuery(String cql, QueryOptions options) {
+		return doExecute(addQueryOptions(new SimpleStatement(cql), options != null ? options : defaultQueryOptions));
+	}
+
+	/**
+	 * @deprecated See deprecation notes on {@link #doExecute(String, QueryOptions)}.
+	 * @see #doExecute(String, QueryOptions)
+	 */
 	protected ResultSet doExecute(String cql) {
 		return doExecute(cql, null);
 	}
 
+	/**
+	 * @deprecated There is no way to know whether the given query is an insert, update, delete, etc without parsing it
+	 *             before executing it, so we simply add {@link QueryOptions}, not any {@link WriteOptions}, despite the
+	 *             fact that this method is only intended to support mutating queries. If {@link SimpleStatement}
+	 *             supported setting TTL & other write options, we could support {@link WriteOptions}.
+	 * @param cql
+	 * @param options
+	 * @return
+	 */
 	protected ResultSet doExecute(String cql, QueryOptions options) {
 		return doExecute(addQueryOptions(new SimpleStatement(cql), options != null ? options : defaultQueryOptions));
 	}
 
 	/**
-	 * Execute a command at the Session Level with optional options
+	 * Execute a command in the {@link Session}.
 	 * 
 	 * @param q The query to execute.
 	 * @param options The {@link QueryOptions}. May be null.
@@ -629,7 +653,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 	@Override
 	public void executeAsynchronously(String cql) throws DataAccessException {
-		executeAsynchronously(cql, (QueryOptions) null);
+		executeAsynchronously(cql, (WriteOptions) null);
 	}
 
 	@Override
@@ -1405,6 +1429,9 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 		return processListOfMap(doExecute(select));
 	}
 
+	/**
+	 * Sets the default {@link QueryOptions} to use for non-mutating operations.
+	 */
 	public void setDefaultQueryOptions(QueryOptions queryOptions) {
 		this.defaultQueryOptions = queryOptions;
 	}
