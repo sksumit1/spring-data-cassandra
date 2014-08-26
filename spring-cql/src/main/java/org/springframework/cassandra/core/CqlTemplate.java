@@ -538,6 +538,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	 * @deprecated See deprecation notes on {@link #doExecute(String, QueryOptions)}.
 	 * @see #doExecute(String, QueryOptions)
 	 */
+	@Deprecated
 	protected ResultSet doExecute(String cql) {
 		return doExecute(cql, null);
 	}
@@ -551,6 +552,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	 * @param options
 	 * @return
 	 */
+	@Deprecated
 	protected ResultSet doExecute(String cql, QueryOptions options) {
 		return doExecute(addQueryOptions(new SimpleStatement(cql), options != null ? options : defaultQueryOptions));
 	}
