@@ -653,7 +653,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 	@Override
 	public void executeAsynchronously(String cql) throws DataAccessException {
-		executeAsynchronously(cql, (WriteOptions) null);
+		executeAsynchronously(cql, (QueryOptions) null);
 	}
 
 	@Override
