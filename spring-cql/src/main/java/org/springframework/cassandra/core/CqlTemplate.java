@@ -225,12 +225,12 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 	@Override
 	public void execute(String cql) throws DataAccessException {
-		execute(cql, (QueryOptions) null);
+		doExecute(new SimpleStatement(cql));
 	}
 
 	@Override
 	public void execute(String cql, QueryOptions options) throws DataAccessException {
-		doExecute(cql, options);
+		doExecute(addQueryOptions(new SimpleStatement(cql), options != null ? options : defaultQueryOptions));
 	}
 
 	@Override
@@ -240,13 +240,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 	@Override
 	public ResultSetFuture queryAsynchronously(final String cql) {
-		return execute(new SessionCallback<ResultSetFuture>() {
-
-			@Override
-			public ResultSetFuture doInSession(Session s) throws DataAccessException {
-				return s.executeAsync(cql);
-			}
-		});
+		return queryAsynchronously(cql, (QueryOptions) null);
 	}
 
 	@Override
@@ -260,9 +254,8 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 		return rse.extractData(execute(new SessionCallback<ResultSet>() {
 			@Override
 			public ResultSet doInSession(Session s) throws DataAccessException {
-				Statement statement = new SimpleStatement(cql);
-				addQueryOptions(statement, options);
-				ResultSetFuture rsf = s.executeAsync(statement);
+				ResultSetFuture rsf = s.executeAsync(addQueryOptions(new SimpleStatement(cql), options != null ? options
+						: defaultQueryOptions));
 				ResultSet rs = null;
 				try {
 					rs = rsf.get(timeout, timeUnit);
@@ -286,9 +279,8 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 		return execute(new SessionCallback<ResultSetFuture>() {
 			@Override
 			public ResultSetFuture doInSession(Session s) throws DataAccessException {
-				Statement statement = new SimpleStatement(cql);
-				addQueryOptions(statement, options);
-				return s.executeAsync(statement);
+				return s
+						.executeAsync(addQueryOptions(new SimpleStatement(cql), options != null ? options : defaultQueryOptions));
 			}
 		});
 	}
@@ -296,64 +288,51 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	@Override
 	public void queryAsynchronously(String cql, Runnable listener) {
 		queryAsynchronously(cql, listener, new Executor() {
-
 			@Override
 			public void execute(Runnable command) {
 				command.run();
 			}
 		});
-
 	}
 
 	@Override
 	public void queryAsynchronously(String cql, AsynchronousQueryListener listener) {
-
 		queryAsynchronously(cql, listener, new Executor() {
-
 			@Override
 			public void execute(Runnable command) {
 				command.run();
 			}
 		});
-
 	}
 
 	@Override
 	public void queryAsynchronously(String cql, Runnable listener, QueryOptions options) {
 		queryAsynchronously(cql, listener, options, new Executor() {
-
 			@Override
 			public void execute(Runnable command) {
 				command.run();
 			}
-
 		});
-
 	}
 
 	@Override
 	public void queryAsynchronously(String cql, AsynchronousQueryListener listener, QueryOptions options) {
 		queryAsynchronously(cql, listener, options, new Executor() {
-
 			@Override
 			public void execute(Runnable command) {
 				command.run();
 			}
-
 		});
-
 	}
 
 	@Override
 	public void queryAsynchronously(String cql, Runnable listener, Executor executor) {
 		queryAsynchronously(cql, listener, null, executor);
-
 	}
 
 	@Override
 	public void queryAsynchronously(String cql, AsynchronousQueryListener listener, Executor executor) {
 		queryAsynchronously(cql, listener, null, executor);
-
 	}
 
 	@Override
@@ -362,9 +341,8 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 		execute(new SessionCallback<Object>() {
 			@Override
 			public Object doInSession(Session s) throws DataAccessException {
-				Statement statement = new SimpleStatement(cql);
-				addQueryOptions(statement, options);
-				ResultSetFuture rsf = s.executeAsync(statement);
+				ResultSetFuture rsf = s.executeAsync(addQueryOptions(new SimpleStatement(cql), options != null ? options
+						: defaultQueryOptions));
 				rsf.addListener(listener, executor);
 				return null;
 			}
@@ -377,9 +355,8 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 		execute(new SessionCallback<Object>() {
 			@Override
 			public Object doInSession(Session s) throws DataAccessException {
-				Statement statement = new SimpleStatement(cql);
-				addQueryOptions(statement, options);
-				final ResultSetFuture rsf = s.executeAsync(statement);
+				final ResultSetFuture rsf = s.executeAsync(addQueryOptions(new SimpleStatement(cql), options != null ? options
+						: defaultQueryOptions));
 				Runnable wrapper = new Runnable() {
 					@Override
 					public void run() {
@@ -398,7 +375,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 			@Override
 			public ResultSetFuture doInSession(Session s) throws DataAccessException {
 				Statement statement = new SimpleStatement(cql);
-				addQueryOptions(statement, options);
+				addQueryOptions(statement, options != null ? options : defaultQueryOptions);
 				return s.executeAsync(statement);
 			}
 		}));
@@ -518,42 +495,13 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 		Assert.notNull(callback);
 
 		try {
-
 			return callback.doInSession(getSession());
-
 		} catch (DataAccessException e) {
 			throw translateExceptionIfPossible(e);
 		}
 	}
 
-	protected ResultSet doQuery(String cql) {
-		return doQuery(cql, null);
-	}
-
 	protected ResultSet doQuery(String cql, QueryOptions options) {
-		return doExecute(addQueryOptions(new SimpleStatement(cql), options != null ? options : defaultQueryOptions));
-	}
-
-	/**
-	 * @deprecated See deprecation notes on {@link #doExecute(String, QueryOptions)}.
-	 * @see #doExecute(String, QueryOptions)
-	 */
-	@Deprecated
-	protected ResultSet doExecute(String cql) {
-		return doExecute(cql, null);
-	}
-
-	/**
-	 * @deprecated There is no way to know whether the given query is an insert, update, delete, etc without parsing it
-	 *             before executing it, so we simply add {@link QueryOptions}, not any {@link WriteOptions}, despite the
-	 *             fact that this method is only intended to support mutating queries. If {@link SimpleStatement}
-	 *             supported setting TTL & other write options, we could support {@link WriteOptions}.
-	 * @param cql
-	 * @param options
-	 * @return
-	 */
-	@Deprecated
-	protected ResultSet doExecute(String cql, QueryOptions options) {
 		return doExecute(addQueryOptions(new SimpleStatement(cql), options != null ? options : defaultQueryOptions));
 	}
 
@@ -655,12 +603,12 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 	@Override
 	public void executeAsynchronously(String cql) throws DataAccessException {
-		executeAsynchronously(cql, (QueryOptions) null);
+		doExecuteAsync(new SimpleStatement(cql));
 	}
 
 	@Override
 	public void executeAsynchronously(final String cql, QueryOptions options) throws DataAccessException {
-		doExecuteAsync(addQueryOptions(new SimpleStatement(cql), options));
+		doExecuteAsync(addQueryOptions(new SimpleStatement(cql), options != null ? options : defaultQueryOptions));
 	}
 
 	@Override
@@ -694,14 +642,11 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	@Override
 	public void executeAsynchronously(String cql, AsynchronousQueryListener listener) throws DataAccessException {
 		executeAsynchronously(cql, listener, new Executor() {
-
 			@Override
 			public void execute(Runnable command) {
 				command.run();
 			}
-
 		});
-
 	}
 
 	@Override
@@ -894,10 +839,8 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 			PreparedStatement ps = psc.createPreparedStatement(getSession());
 			return action.doInPreparedStatement(ps);
 		} catch (DriverException dx) {
-			translateExceptionIfPossible(dx);
+			throw translateExceptionIfPossible(dx);
 		}
-
-		return null;
 	}
 
 	@Override
@@ -1045,12 +988,23 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 	@Override
 	public void truncate(String tableName) throws DataAccessException {
-		truncate(cqlId(tableName));
+		truncate(tableName, null);
+	}
+
+	@Override
+	public void truncate(String tableName, QueryOptions options) throws DataAccessException {
+		truncate(cqlId(tableName), options);
 	}
 
 	@Override
 	public void truncate(CqlIdentifier tableName) throws DataAccessException {
+		truncate(tableName, null);
+	}
+
+	@Override
+	public void truncate(CqlIdentifier tableName, QueryOptions options) throws DataAccessException {
 		Truncate truncate = QueryBuilder.truncate(tableName.toCql());
+		addQueryOptions(truncate, options != null ? options : defaultQueryOptions);
 		doExecute(truncate);
 	}
 
@@ -1071,7 +1025,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 				} else {
 					bs = ps.bind();
 				}
-				rs = doExecute(addQueryOptions(bs, options));
+				rs = doExecute(addQueryOptions(bs, options != null ? options : defaultQueryOptions));
 				return rse.extractData(rs);
 			}
 		});

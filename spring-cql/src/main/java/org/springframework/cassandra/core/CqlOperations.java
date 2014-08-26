@@ -55,7 +55,7 @@ public interface CqlOperations {
 	 * Executes the supplied {@link SessionCallback} in the current Template Session. The implementation of
 	 * SessionCallback can decide whether or not to <code>execute()</code> or <code>executeAsync()</code> the operation.
 	 * <p/>
-	 * For nonmutating operations (<code>SELECT</code>), see the various <code>query*(String,..)</code> methods.
+	 * For read operations (<code>SELECT</code>), see the various <code>query*(String,..)</code> methods.
 	 * 
 	 * @param sessionCallback
 	 * @return Type<T> defined in the SessionCallback
@@ -63,42 +63,40 @@ public interface CqlOperations {
 	<T> T execute(SessionCallback<T> sessionCallback) throws DataAccessException;
 
 	/**
-	 * Executes the supplied CQL mutating query (<code>INSERT</code>, <code>UPDATE</code>, <code>DELETE</code>, etc) using
-	 * this template's default {@link QueryOptions} (if set) and returns nothing.
+	 * Executes the supplied CQL mutating query (<code>INSERT</code>, <code>UPDATE</code>, <code>DELETE</code>) and
+	 * returns nothing. <strong>Any required options (consistency level, etc) must be included in the CQL query
+	 * string.</strong>
 	 * <p/>
-	 * For nonmutating operations (<code>SELECT</code>), see the various <code>query*(String,..)</code> methods.
+	 * For read operations (<code>SELECT</code>), see the various <code>query*(String,..)</code> methods.
 	 * <p/>
-	 * <em>NOTE:</em> Even though this method is intended only to be used with write operations, only default <i>query</i>
-	 * options ({@link QueryOptions}) will be used (if set), not default <i>write</i> options ({@link WriteOptions}), due
-	 * to limitations in the current underlying Java driver.
 	 * 
 	 * @param cql
-	 * @deprecated Prefer {@link #execute(Insert)}, {@link #execute(Update)}, {@link #execute(Delete)}, etc.
 	 */
-	@Deprecated
 	void execute(String cql) throws DataAccessException;
 
 	/**
-	 * Executes the supplied CQL mutating query (<code>INSERT</code>, <code>UPDATE</code>, <code>DELETE</code>, etc) using
-	 * the given {@link QueryOptions} and returns nothing.
+	 * Executes the supplied CQL mutating query (<code>INSERT</code>, <code>UPDATE</code>, <code>DELETE</code>) using the
+	 * given {@link QueryOptions} and returns nothing. If <code>null</code> is given for <code>options</code>, then this
+	 * template's default query options will be used.
 	 * <p/>
-	 * For nonmutating operations (<code>SELECT</code>), see the various <code>query*(String,..)</code> methods.
+	 * For read operations (<code>SELECT</code>), see the various <code>query*(String,..)</code> methods.
 	 * <p/>
 	 * <em>NOTE:</em> Even though this method is intended only to be used with write operations, only <i>query</i> options
-	 * ({@link QueryOptions}) will be used (if given) due to limitations in the current underlying Java driver.
+	 * (those defined by {@link QueryOptions}) will be used (if given) due to limitations in the underlying Java driver,
+	 * which is the reason for this method's deprecation.
 	 * 
 	 * @param cql
-	 * @param options may be null
+	 * @param options May be null.
 	 * @deprecated Prefer {@link #execute(Insert)}, {@link #execute(Update)}, {@link #execute(Delete)}, etc.
 	 */
 	@Deprecated
 	void execute(String cql, QueryOptions options) throws DataAccessException;
 
 	/**
-	 * Executes the supplied CQL mutating statement (<code>INSERT</code>, <code>UPDATE</code>, <code>DELETE</code>, etc)
-	 * using this template's default {@link QueryOptions} and returns nothing.
+	 * Executes the supplied CQL mutating statement (<code>INSERT</code>, <code>UPDATE</code>, <code>DELETE</code>) using
+	 * this template's default {@link QueryOptions} and returns nothing.
 	 * <p/>
-	 * For nonmutating operations (<code>SELECT</code>), see the various <code>query*(String,..)</code> methods.
+	 * For read operations (<code>SELECT</code>), see the various <code>query*(String,..)</code> methods.
 	 * 
 	 * @param query The {@link Statement} to execute
 	 */
@@ -140,26 +138,29 @@ public interface CqlOperations {
 	void execute(Truncate truncate) throws DataAccessException;
 
 	/**
-	 * Executes the supplied mutating query (<code>INSERT</code>, <code>UPDATE</code>, <code>DELETE</code>, etc)
-	 * asynchronously using this template's default {@link QueryOptions} and returns nothing.
+	 * Executes the supplied mutating query (<code>INSERT</code>, <code>UPDATE</code>, <code>DELETE</code>) asynchronously
+	 * and returns nothing. <strong>Any required options (consistency level, etc) must be included in the CQL query
+	 * string.</strong>
 	 * <p/>
-	 * For nonmutating operations (<code>SELECT</code>), see the various <code>queryAsynchronously</code> methods.
+	 * For read operations (<code>SELECT</code>), see the various <code>queryAsynchronously(String,..)</code> methods.
 	 * 
 	 * @param cql The CQL String to execute
-	 * @deprecated Prefer {@link #executeAsynchronously(Insert)}, {@link #executeAsynchronously(Update)} and their
-	 *             overloads
 	 */
-	@Deprecated
 	void executeAsynchronously(String cql) throws DataAccessException;
 
 	/**
-	 * Executes the supplied mutating CQL query (<code>INSERT</code>, <code>UPDATE</code>, <code>DELETE</code>, etc)
-	 * asynchronously using the given {@link QueryOptions} and returns nothing.
+	 * Executes the supplied mutating CQL query (<code>INSERT</code>, <code>UPDATE</code>, <code>DELETE</code>)
+	 * asynchronously using the given {@link QueryOptions} and returns nothing. If <code>null</code> is given for
+	 * <code>options</code>, then this template's default query options will be used.
 	 * <p/>
-	 * For nonmutating operations (<code>SELECT</code>), see the various <code>queryAsynchronously</code> methods.
+	 * For read operations (<code>SELECT</code>), see the various <code>queryAsynchronously(String,..)</code> methods.
+	 * <p/>
+	 * <em>NOTE:</em> Even though this method is intended only to be used with write operations, only <i>query</i> options
+	 * (those defined by {@link QueryOptions}) will be used (if given) due to limitations in the current underlying Java
+	 * driver, which is the reason for this method's deprecation.
 	 * 
 	 * @param cql The CQL String to execute
-	 * @param options The {@link QueryOptions} to use. Only applies to cql statements that can use QueryOptions.
+	 * @param options May be null
 	 * @deprecated Prefer {@link #executeAsynchronously(Insert)}, {@link #executeAsynchronously(Update)} and their
 	 *             overloads
 	 */
@@ -167,63 +168,54 @@ public interface CqlOperations {
 	void executeAsynchronously(String cql, QueryOptions options) throws DataAccessException;
 
 	/**
-	 * Executes the supplied mutating CQL query (<code>INSERT</code>, <code>UPDATE</code>, <code>DELETE</code>, etc)
-	 * asynchronously using this template's default {@link QueryOptions} and returns nothing.
+	 * Executes the supplied mutating CQL query (<code>INSERT</code>, <code>UPDATE</code>, <code>DELETE</code>)
+	 * asynchronously and returns nothing. <strong>Any required options (consistency level, etc) must be included in the
+	 * CQL query string.</strong>
 	 * <p/>
-	 * For nonmutating operations (<code>SELECT</code>), see the various <code>queryAsynchronously</code> methods.
+	 * For read operations (<code>SELECT</code>), see the various <code>queryAsynchronously(String,..)</code> methods.
 	 * 
 	 * @param cql The CQL String to execute
 	 * @param listener The {@link Runnable} to register with the {@link ResultSetFuture}
-	 * @deprecated Prefer {@link #executeAsynchronously(Insert)}, {@link #executeAsynchronously(Update)} and their
-	 *             overloads
 	 */
-	@Deprecated
 	void executeAsynchronously(String cql, Runnable listener) throws DataAccessException;
 
 	/**
-	 * Executes the supplied mutating CQL query (<code>INSERT</code>, <code>UPDATE</code>, <code>DELETE</code>, etc)
-	 * asynchronously using this template's default {@link QueryOptions} and returns nothing.
+	 * Executes the supplied mutating CQL query (<code>INSERT</code>, <code>UPDATE</code>, <code>DELETE</code>)
+	 * asynchronously and returns nothing. <strong>Any required options (consistency level, etc) must be included in the
+	 * CQL query string.</strong>
 	 * <p/>
-	 * For nonmutating operations (<code>SELECT</code>), see the various <code>queryAsynchronously</code> methods.
+	 * For read operations (<code>SELECT</code>), see the various <code>queryAsynchronously(String,..)</code> methods.
 	 * 
 	 * @param cql The CQL String to execute
 	 * @param listener The {@link Runnable} to register with the {@link ResultSetFuture}
 	 * @param executor The {@link Executor} to register with the {@link ResultSetFuture}
-	 * @deprecated Prefer {@link #executeAsynchronously(Insert)}, {@link #executeAsynchronously(Update)} and their
-	 *             overloads
 	 */
-	@Deprecated
 	void executeAsynchronously(String cql, Runnable listener, Executor executor) throws DataAccessException;
 
 	/**
-	 * Executes the supplied mutating CQL query (<code>INSERT</code>, <code>UPDATE</code>, <code>DELETE</code>, etc)
-	 * asynchronously using this template's default {@link QueryOptions} and returns nothing.
+	 * Executes the supplied mutating CQL query (<code>INSERT</code>, <code>UPDATE</code>, <code>DELETE</code>)
+	 * asynchronously and returns nothing. <strong>Any required options (consistency level, etc) must be included in the
+	 * CQL query string.</strong>
 	 * <p/>
-	 * For nonmutating operations (<code>SELECT</code>), see the various <code>queryAsynchronously</code> methods.
+	 * For read operations (<code>SELECT</code>), see the various <code>queryAsynchronously(String,..)</code> methods.
 	 * 
 	 * @param cql The CQL String to execute
 	 * @param listener The {@link AsynchronousQueryListener} to register with the {@link ResultSetFuture}
-	 * @see queryAsyncronously for Reads
-	 * @deprecated Prefer {@link #executeAsynchronously(Insert)}, {@link #executeAsynchronously(Update)} and their
-	 *             overloads
 	 */
-	@Deprecated
 	void executeAsynchronously(String cql, AsynchronousQueryListener listener) throws DataAccessException;
 
 	/**
-	 * Executes the supplied mutating CQL query (<code>INSERT</code>, <code>UPDATE</code>, <code>DELETE</code>, etc)
-	 * asynchronously using this template's default {@link QueryOptions} and returns nothing.
+	 * Executes the supplied mutating CQL query (<code>INSERT</code>, <code>UPDATE</code>, <code>DELETE</code>)
+	 * asynchronously and returns nothing. <strong>Any required options (consistency level, etc) must be included in the
+	 * CQL query string.</strong>
 	 * <p/>
-	 * For nonmutating operations (<code>SELECT</code>), see the various <code>queryAsynchronously</code> methods.
+	 * For read operations (<code>SELECT</code>), see the various <code>queryAsynchronously(String,..)</code> methods.
 	 * 
 	 * @param cql The CQL String to execute
 	 * @param listener The {@link AsynchronousQueryListener} to register with the {@link ResultSetFuture}
 	 * @param executor The {@link Executor} to regsiter with the {@link ResultSetFuture}
 	 * @see queryAsyncronously for Reads
-	 * @deprecated Prefer {@link #executeAsynchronously(Insert)}, {@link #executeAsynchronously(Update)} and their
-	 *             overloads
 	 */
-	@Deprecated
 	void executeAsynchronously(String cql, AsynchronousQueryListener listener, Executor executor)
 			throws DataAccessException;
 
@@ -266,7 +258,7 @@ public interface CqlOperations {
 	 * Executes the supplied mutating CQL {@link Statement} (<code>INSERT</code>, <code>UPDATE</code>, <code>DELETE</code>
 	 * , etc) asynchronously and returns nothing.
 	 * <p/>
-	 * For nonmutating operations (<code>SELECT</code>), see the various <code>queryAsynchronously</code> methods.
+	 * For read operations (<code>SELECT</code>), see the various <code>queryAsynchronously(String,..)</code> methods.
 	 * 
 	 * @param query The {@link Statement} to execute
 	 */
@@ -276,7 +268,7 @@ public interface CqlOperations {
 	 * Executes the supplied mutating CQL {@link Statement} (<code>INSERT</code>, <code>UPDATE</code>, <code>DELETE</code>
 	 * , etc) asynchronously and returns nothing. The given {@link Runnable} is execute upon query completion.
 	 * <p/>
-	 * For nonmutating operations (<code>SELECT</code>), see the various <code>queryAsynchronously</code> methods.
+	 * For read operations (<code>SELECT</code>), see the various <code>queryAsynchronously(String,..)</code> methods.
 	 * 
 	 * @param query The {@link Statement} to execute
 	 */
@@ -287,7 +279,7 @@ public interface CqlOperations {
 	 * , etc) asynchronously and returns nothing. The given {@link AsynchronousQueryListener} is invoked upon query
 	 * completion.
 	 * <p/>
-	 * For nonmutating operations (<code>SELECT</code>), see the various <code>queryAsynchronously</code> methods.
+	 * For read operations (<code>SELECT</code>), see the various <code>queryAsynchronously(String,..)</code> methods.
 	 * 
 	 * @param query The {@link Statement} to execute
 	 */
@@ -298,7 +290,7 @@ public interface CqlOperations {
 	 * , etc) asynchronously using and returns nothing. The given {@link Runnable} is executed via the given
 	 * {@link Executor} upon query completion.
 	 * <p/>
-	 * For nonmutating operations (<code>SELECT</code>), see the various <code>queryAsynchronously</code> methods.
+	 * For read operations (<code>SELECT</code>), see the various <code>queryAsynchronously(String,..)</code> methods.
 	 * 
 	 * @param query The {@link Statement} to execute
 	 */
@@ -309,7 +301,7 @@ public interface CqlOperations {
 	 * , etc) asynchronously and returns nothing. The given {@link AsynchronousQueryListener} is invoked via the given
 	 * {@link Executor} upon query completion.
 	 * <p/>
-	 * For nonmutating operations (<code>SELECT</code>), see the various <code>queryAsynchronously</code> methods.
+	 * For read operations (<code>SELECT</code>), see the various <code>queryAsynchronously(String,..)</code> methods.
 	 * 
 	 * @param query The {@link Statement} to execute
 	 */
@@ -317,8 +309,8 @@ public interface CqlOperations {
 			throws DataAccessException;
 
 	/**
-	 * Executes the provided nonmutating CQL query (<code>SELECT</code>) using this template's default
-	 * {@link QueryOptions} (if set), and extracts the results with the given {@link ResultSetExtractor}.
+	 * Executes the provided read CQL query (<code>SELECT</code>) using this template's default {@link QueryOptions} (if
+	 * set), and extracts the results with the given {@link ResultSetExtractor}.
 	 * 
 	 * @param cql The Query
 	 * @param rse The implementation for extracting the ResultSet
@@ -329,8 +321,8 @@ public interface CqlOperations {
 	<T> T queryAsynchronously(String cql, ResultSetExtractor<T> rse, Long timeout, TimeUnit timeUnit);
 
 	/**
-	 * Executes the provided nonmutating CQL query (<code>SELECT</code>) using the given {@link QueryOptions}, and
-	 * extracts the results with the {@link ResultSetExtractor}.
+	 * Executes the provided read CQL query (<code>SELECT</code>) using the given {@link QueryOptions}, and extracts the
+	 * results with the {@link ResultSetExtractor}.
 	 * 
 	 * @param cql The Query
 	 * @param rse The implementation for extracting the ResultSet
@@ -341,8 +333,8 @@ public interface CqlOperations {
 	<T> T queryAsynchronously(String cql, ResultSetExtractor<T> rse, Long timeout, TimeUnit timeUnit, QueryOptions options);
 
 	/**
-	 * Executes the provided nonmutating CQL query (<code>SELECT</code>) using this template's default
-	 * {@link QueryOptions} (if set), and returns the corresponding {@link ResultSetFuture}.
+	 * Executes the provided read CQL query (<code>SELECT</code>) using this template's default {@link QueryOptions} (if
+	 * set), and returns the corresponding {@link ResultSetFuture}.
 	 * 
 	 * @param cql The Query
 	 */
@@ -357,8 +349,8 @@ public interface CqlOperations {
 	ResultSetFuture queryAsynchronously(Select select);
 
 	/**
-	 * Executes the provided nonmutating CQL query (<code>SELECT</code>) using the given {@link QueryOptions} (if set),
-	 * and returns the corresponding {@link ResultSetFuture}.
+	 * Executes the provided read CQL query (<code>SELECT</code>) using the given {@link QueryOptions} (if set), and
+	 * returns the corresponding {@link ResultSetFuture}.
 	 * 
 	 * @param cql The Query
 	 * @param options Query Options
@@ -367,8 +359,8 @@ public interface CqlOperations {
 	ResultSetFuture queryAsynchronously(String cql, QueryOptions options);
 
 	/**
-	 * Executes the provided nonmutating CQL query (<code>SELECT</code>) using this template's default
-	 * {@link QueryOptions} (if set), and returns nothing. The given {@link Runnable} is invoked upon query completion.
+	 * Executes the provided read CQL query (<code>SELECT</code>) using this template's default {@link QueryOptions} (if
+	 * set), and returns nothing. The given {@link Runnable} is invoked upon query completion.
 	 * <p/>
 	 * A more useful method than this one is {@link #queryAsynchronously(String, AsynchronousQueryListener)}, where you're
 	 * given the {@link ResultSetFuture} after the query has been executed.
@@ -393,8 +385,8 @@ public interface CqlOperations {
 	void queryAsynchronously(Select select, Runnable listener);
 
 	/**
-	 * Executes the provided nonmutating CQL query (<code>SELECT</code>) using this template's default
-	 * {@link QueryOptions} (if set), and returns nothing. The given {@link Runnable} is invoked upon query completion.
+	 * Executes the provided read CQL query (<code>SELECT</code>) using this template's default {@link QueryOptions} (if
+	 * set), and returns nothing. The given {@link Runnable} is invoked upon query completion.
 	 * <p/>
 	 * This method is preferred over {@link #queryAsynchronously(String,Runnable)}, because the
 	 * {@link AsynchronousQueryListener} gives you access to the {@link ResultSetFuture} once the query is completed.
@@ -417,7 +409,7 @@ public interface CqlOperations {
 	void queryAsynchronously(Select select, AsynchronousQueryListener listener);
 
 	/**
-	 * Executes the provided nonmutating CQL query (<code>SELECT</code>) using the given {@link QueryOptions} and returns
+	 * Executes the provided read CQL query (<code>SELECT</code>) using the given {@link QueryOptions} and returns
 	 * nothing. The given {@link Runnable} is invoked upon query completion.
 	 * 
 	 * @param cql The Query
@@ -428,7 +420,7 @@ public interface CqlOperations {
 	void queryAsynchronously(String cql, Runnable listener, QueryOptions options);
 
 	/**
-	 * Executes the provided nonmutating CQL query (<code>SELECT</code>) using the given {@link QueryOptions}, and returns
+	 * Executes the provided read CQL query (<code>SELECT</code>) using the given {@link QueryOptions}, and returns
 	 * nothing. The given {@link AsynchronousQueryListener} is invoked upon query completion.
 	 * <p/>
 	 * This method is preferred over {@link #queryAsynchronously(String,Runnable,QueryOptions)}, because the
@@ -436,15 +428,15 @@ public interface CqlOperations {
 	 * 
 	 * @param cql The Query
 	 * @param listener The {@link AsynchronousQueryListener}
-	 * @param options Query Options
+	 * @param options May be null
 	 * @param listener Runnable Listener for handling the query in a separate thread
 	 */
 	void queryAsynchronously(String cql, AsynchronousQueryListener listener, QueryOptions options);
 
 	/**
-	 * Executes the provided nonmutating CQL query (<code>SELECT</code>) using this template's default
-	 * {@link QueryOptions} (if set), and returns nothing. The given {@link Runnable} is invoked upon query completion via
-	 * the given {@link Executor}.
+	 * Executes the provided read CQL query (<code>SELECT</code>) using this template's default {@link QueryOptions} (if
+	 * set), and returns nothing. The given {@link Runnable} is invoked upon query completion via the given
+	 * {@link Executor}.
 	 * <p/>
 	 * A more useful method than this one is {@link #queryAsynchronously(String, AsynchronousQueryListener, Executor)},
 	 * where you're given the {@link ResultSetFuture} after the query has been executed.
@@ -465,9 +457,9 @@ public interface CqlOperations {
 	void queryAsynchronously(Select select, Runnable listener, Executor executor);
 
 	/**
-	 * Executes the provided nonmutating CQL query (<code>SELECT</code>) using this template's default
-	 * {@link QueryOptions} (if set), and returns nothing. The given {@link AsynchronousQueryListener} is invoked upon
-	 * query completion via the given {@link Executor}.
+	 * Executes the provided read CQL query (<code>SELECT</code>) using this template's default {@link QueryOptions} (if
+	 * set), and returns nothing. The given {@link AsynchronousQueryListener} is invoked upon query completion via the
+	 * given {@link Executor}.
 	 * <p/>
 	 * This method is preferred over {@link #queryAsynchronously(String,Runnable,Executor)}, because the
 	 * {@link AsynchronousQueryListener} gives you access to the {@link ResultSetFuture} once the query is completed.
@@ -490,7 +482,7 @@ public interface CqlOperations {
 	void queryAsynchronously(Select select, AsynchronousQueryListener listener, Executor executor);
 
 	/**
-	 * Executes the provided nonmutating CQL query (<code>SELECT</code>) using the given {@link QueryOptions} and returns
+	 * Executes the provided read CQL query (<code>SELECT</code>) using the given {@link QueryOptions} and returns
 	 * nothing. The given {@link Runnable} is invoked upon query completion via the given {@link Executor}.
 	 * 
 	 * @param cql The Query
@@ -501,7 +493,7 @@ public interface CqlOperations {
 	void queryAsynchronously(String cql, Runnable listener, QueryOptions options, Executor executor);
 
 	/**
-	 * Executes the provided nonmutating CQL query (<code>SELECT</code>) using the given {@link QueryOptions}, and returns
+	 * Executes the provided read CQL query (<code>SELECT</code>) using the given {@link QueryOptions}, and returns
 	 * nothing. The given {@link AsynchronousQueryListener} is invoked upon query completion via the given
 	 * {@link Executor}.
 	 * <p/>
@@ -516,7 +508,8 @@ public interface CqlOperations {
 	void queryAsynchronously(String cql, AsynchronousQueryListener listener, QueryOptions options, Executor executor);
 
 	/**
-	 * Executes the provided CQL query and returns the {@link ResultSet}.
+	 * Executes the provided CQL query and returns the {@link ResultSet} using this template's default
+	 * {@link QueryOptions}.
 	 * 
 	 * @param cql The query
 	 * @return The {@link ResultSet}
@@ -532,7 +525,9 @@ public interface CqlOperations {
 	ResultSet query(Select select);
 
 	/**
-	 * Executes the provided CQL query with the given {@link QueryOptions} and returns the {@link ResultSet}.
+	 * Executes the provided CQL query with the given {@link QueryOptions} and returns the {@link ResultSet}. If
+	 * <code>null</code> is given for {@link QueryOptions}, then this template's default {@link QueryOptions} will be
+	 * used.
 	 * 
 	 * @param cql The query
 	 * @param options The {@link QueryOptions}; may be null.
@@ -541,7 +536,8 @@ public interface CqlOperations {
 	ResultSet query(String cql, QueryOptions options);
 
 	/**
-	 * Executes the provided CQL Query, and extracts the results with the ResultSetExtractor.
+	 * Executes the provided CQL Query, and extracts the results with the ResultSetExtractor, using this template's
+	 * default {@link QueryOptions}.
 	 * 
 	 * @param cql The Query
 	 * @param rse The implementation for extracting the ResultSet
@@ -561,7 +557,8 @@ public interface CqlOperations {
 	<T> T query(Select select, ResultSetExtractor<T> rse) throws DataAccessException;
 
 	/**
-	 * Executes the provided CQL Query, and extracts the results with the ResultSetExtractor.
+	 * Executes the provided CQL Query, and extracts the results with the ResultSetExtractor. If <code>null</code> is
+	 * given for {@link QueryOptions}, then this template's default {@link QueryOptions} will be used.
 	 * 
 	 * @param cql The Query
 	 * @param rse The implementation for extracting the ResultSet
@@ -572,7 +569,8 @@ public interface CqlOperations {
 	<T> T query(String cql, ResultSetExtractor<T> rse, QueryOptions options) throws DataAccessException;
 
 	/**
-	 * Executes the provided CQL Query, and then processes the results with the <code>RowCallbackHandler</code>.
+	 * Executes the provided CQL Query, and then processes the results with the <code>RowCallbackHandler</code> using this
+	 * template's default {@link QueryOptions}.
 	 * 
 	 * @param cql The Query
 	 * @param rch The implementation for processing the rows returned.
@@ -590,7 +588,9 @@ public interface CqlOperations {
 	void query(Select select, RowCallbackHandler rch) throws DataAccessException;
 
 	/**
-	 * Executes the provided CQL Query, and then processes the results with the <code>RowCallbackHandler</code>.
+	 * Executes the provided CQL Query, and then processes the results with the <code>RowCallbackHandler</code>. If
+	 * <code>null</code> is given for {@link QueryOptions}, then this template's default {@link QueryOptions} will be
+	 * used.
 	 * 
 	 * @param cql The Query
 	 * @param rch The implementation for processing the rows returned.
@@ -611,7 +611,8 @@ public interface CqlOperations {
 	void process(ResultSet resultSet, RowCallbackHandler rch) throws DataAccessException;
 
 	/**
-	 * Executes the provided CQL Query, and maps all Rows returned with the supplied RowMapper.
+	 * Executes the provided CQL Query, and maps all Rows returned with the supplied RowMapper using this template's
+	 * default {@link QueryOptions}.
 	 * 
 	 * @param cql The Query
 	 * @param rowMapper The implementation for mapping all rows
@@ -631,7 +632,8 @@ public interface CqlOperations {
 	<T> List<T> query(Select select, RowMapper<T> rowMapper) throws DataAccessException;
 
 	/**
-	 * Executes the provided CQL Query, and maps all Rows returned with the supplied RowMapper.
+	 * Executes the provided CQL Query, and maps all Rows returned with the supplied RowMapper. If <code>null</code> is
+	 * given for {@link QueryOptions}, then this template's default {@link QueryOptions} will be used.
 	 * 
 	 * @param cql The Query
 	 * @param rowMapper The implementation for mapping all rows
@@ -654,7 +656,8 @@ public interface CqlOperations {
 	<T> List<T> process(ResultSet resultSet, RowMapper<T> rowMapper) throws DataAccessException;
 
 	/**
-	 * Executes the provided CQL Query, and maps <b>ONE</b> Row returned with the supplied RowMapper.
+	 * Executes the provided CQL Query, and maps <b>ONE</b> Row returned with the supplied RowMapper using this template's
+	 * default {@link QueryOptions}.
 	 * <p>
 	 * This expects only ONE row to be returned. More than one Row will cause an Exception to be thrown.
 	 * </p>
@@ -667,7 +670,9 @@ public interface CqlOperations {
 	<T> T queryForObject(String cql, RowMapper<T> rowMapper) throws DataAccessException;
 
 	/**
-	 * Executes the provided CQL Query, and maps <b>ONE</b> Row returned with the supplied RowMapper.
+	 * Executes the provided CQL Query, and maps <b>ONE</b> Row returned with the supplied RowMapper using the given
+	 * {@link QueryOptions}. If <code>null</code> is given for {@link QueryOptions}, then this template's default
+	 * {@link QueryOptions} will be used.
 	 * <p>
 	 * This expects only ONE row to be returned. More than one Row will cause an Exception to be thrown.
 	 * </p>
@@ -706,7 +711,8 @@ public interface CqlOperations {
 	<T> T processOne(ResultSet resultSet, RowMapper<T> rowMapper) throws DataAccessException;
 
 	/**
-	 * Executes the provided query and tries to return the first column of the first Row as a Class<T>.
+	 * Executes the provided query and tries to return the first column of the first Row as a Class<T> using this
+	 * template's default {@link QueryOptions}.
 	 * 
 	 * @param cql The Query
 	 * @param requiredType Valid Class that Cassandra Data Types can be converted to.
@@ -716,7 +722,9 @@ public interface CqlOperations {
 	<T> T queryForObject(String cql, Class<T> requiredType) throws DataAccessException;
 
 	/**
-	 * Executes the provided query and tries to return the first column of the first Row as a Class<T>.
+	 * Executes the provided query and tries to return the first column of the first Row as a Class<T> using the given
+	 * {@link QueryOptions}. If <code>null</code> is given for {@link QueryOptions}, then this template's default
+	 * {@link QueryOptions} will be used.
 	 * 
 	 * @param cql The Query
 	 * @param options The {@link QueryOptions} to use
@@ -759,8 +767,9 @@ public interface CqlOperations {
 	Map<String, Object> queryForMap(String cql) throws DataAccessException;
 
 	/**
-	 * Executes the provided CQL Query and maps <b>ONE</b> Row to a basic Map of Strings and Objects. If more than one Row
-	 * is returned from the Query, an exception will be thrown.
+	 * Executes the provided CQL Query and maps <b>ONE</b> Row to a basic Map of Strings and Objects using the given
+	 * {@link QueryOptions}. If <code>null</code> is given for {@link QueryOptions}, then this template's default
+	 * {@link QueryOptions} will be used. If more than one Row is returned from the Query, an exception will be thrown.
 	 * 
 	 * @param cql The Query
 	 * @param options The {@link QueryOptions} to use
@@ -792,7 +801,7 @@ public interface CqlOperations {
 
 	/**
 	 * Executes the provided CQL and returns all values in the first column of the Results as a List of the Type in the
-	 * second argument.
+	 * second argument using this template's default {@link QueryOptions}.
 	 * 
 	 * @param cql The Query
 	 * @param elementType Type to cast the data values to
@@ -803,7 +812,8 @@ public interface CqlOperations {
 
 	/**
 	 * Executes the provided CQL and returns all values in the first column of the Results as a List of the Type in the
-	 * second argument.
+	 * second argument using the given {@link QueryOptions}. If <code>null</code> is given for {@link QueryOptions}, then
+	 * this template's default {@link QueryOptions} will be used.
 	 * 
 	 * @param cql The Query
 	 * @param elementType Type to cast the data values to
@@ -837,8 +847,9 @@ public interface CqlOperations {
 	<T> List<T> processList(ResultSet resultSet, Class<T> elementType) throws DataAccessException;
 
 	/**
-	 * Executes the provided CQL and converts the results to a basic List of Maps. Each element in the List represents a
-	 * Row returned from the Query. Each Row's columns are put into the map as column/value.
+	 * Executes the provided CQL and converts the results to a basic List of Maps using this template's default
+	 * {@link QueryOptions}. Each element in the List represents a Row returned from the Query. Each Row's columns are put
+	 * into the map as column/value.
 	 * 
 	 * @param cql The Query
 	 * @return List of Maps with the query results
@@ -847,8 +858,10 @@ public interface CqlOperations {
 	List<Map<String, Object>> queryForListOfMap(String cql) throws DataAccessException;
 
 	/**
-	 * Executes the provided CQL and converts the results to a basic List of Maps. Each element in the List represents a
-	 * Row returned from the Query. Each Row's columns are put into the map as column/value.
+	 * Executes the provided CQL and converts the results to a basic List of Maps using the given {@link QueryOptions}. If
+	 * <code>null</code> is given for {@link QueryOptions}, then this template's default {@link QueryOptions} will be
+	 * used. Each element in the List represents a Row returned from the Query. Each Row's columns are put into the map as
+	 * column/value.
 	 * 
 	 * @param cql The Query
 	 * @param options The {@link QueryOptions} to use
@@ -1253,18 +1266,34 @@ public interface CqlOperations {
 	void ingest(String cql, Object[][] rows, WriteOptions options);
 
 	/**
-	 * Delete all rows in the table
+	 * Delete all rows in the table using this template's default {@link QueryOptions}.
 	 * 
 	 * @param tableName
 	 */
 	void truncate(CqlIdentifier tableName);
 
 	/**
-	 * Delete all rows in the table
+	 * Delete all rows in the table using this template's default {@link QueryOptions}.
 	 * 
 	 * @param tableName
 	 */
 	void truncate(String tableName);
+
+	/**
+	 * Delete all rows in the table using the given {@link QueryOptions}. If <code>null</code> is given for
+	 * {@link QueryOptions}, then this template's default {@link QueryOptions} will be used.
+	 * 
+	 * @param tableName
+	 */
+	void truncate(CqlIdentifier tableName, QueryOptions options);
+
+	/**
+	 * Delete all rows in the table using the given {@link QueryOptions}. If <code>null</code> is given for
+	 * {@link QueryOptions}, then this template's default {@link QueryOptions} will be used.
+	 * 
+	 * @param tableName
+	 */
+	void truncate(String tableName, QueryOptions options);
 
 	/**
 	 * Counts all rows for given table
