@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:cass="http://www.springframework.org/schema/data/cassandra"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/data/cassandra http://www.springframework.org/schema/data/cassandra/spring-cassandra-1.2.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+	<import resource="classpath:/spring-data-cassandra-basic.xml" />
+
+	<cass:cluster port="${cassandra.native_transport_port}">
+		<cass:keyspace name="#{randomKeyspaceName}" action="CREATE"
+			durable-writes="true">
+		</cass:keyspace>
+	</cass:cluster>
+
+	<cass:session keyspace-name="#{randomKeyspaceName}"
+		schema-action="CREATE">
+	</cass:session>
+	
+	<cass:repositories
+		base-package="org.springframework.data.cassandra.test.integration.querymethods.declared.named" />
+
+	<cass:mapping>
+		<cass:entity
+			class="org.springframework.data.cassandra.test.integration.querymethods.declared.Person">
+			<cass:query name="findFolksWithLastnameAsList"
+				value="select * from person where lastname = ?0" />
+			<cass:query name="findFolksWithLastnameAsResultSet"
+				value="select * from person where lastname = ?0" />
+			<cass:query name="findFolksWithLastnameAsArray"
+				value="select * from person where lastname = ?0" />
+			<cass:query name="findSingle"
+				value="select * from person where lastname = ?0 and firstname = ?1" />
+			<cass:query name="findFolksWithLastnameAsListOfMapOfStringToObject"
+				value="select * from person where lastname = ?0" />
+			<cass:query name="findSingleNickname"
+				value="select nickname from person where lastname = ?0 and firstname = ?1" />
+			<cass:query name="findSingleBirthdate"
+				value="select birthdate from person where lastname = ?0 and firstname = ?1" />
+			<cass:query name="findSingleCool">
+				select cool from person where lastname =
+				?0 and firstname = ?1
+			</cass:query>
+			<cass:query name="findSingleNumberOfChildren"><![CDATA[
+				select numberofchildren from person where lastname = ?0 and firstname = ?1
+			]]></cass:query>
+		</cass:entity>
+	</cass:mapping>
+</beans>

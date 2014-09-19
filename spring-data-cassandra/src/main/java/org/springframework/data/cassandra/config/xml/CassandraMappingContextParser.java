@@ -30,6 +30,7 @@ import org.springframework.data.cassandra.config.DefaultBeanNames;
 import org.springframework.data.cassandra.mapping.BasicCassandraMappingContext;
 import org.springframework.data.cassandra.mapping.EntityMapping;
 import org.springframework.data.cassandra.mapping.Mapping;
+import org.springframework.data.cassandra.mapping.NamedQuery;
 import org.springframework.data.cassandra.mapping.PropertyMapping;
 import org.springframework.util.StringUtils;
 import org.springframework.util.xml.DomUtils;
@@ -119,11 +120,43 @@ public class CassandraMappingContextParser extends AbstractSingleBeanDefinitionP
 		// TODO: parse future entity mappings here, like table options
 
 		Map<String, PropertyMapping> propertyMappings = parsePropertyMappings(entity);
+		Map<String, NamedQuery> namedQueries = parseNamedQueries(entity);
 
 		EntityMapping entityMapping = new EntityMapping(className, tableName, forceQuote);
+
 		entityMapping.setPropertyMappings(propertyMappings);
+		entityMapping.setNamedQueries(namedQueries);
 
 		return entityMapping;
+	}
+
+	protected Map<String, NamedQuery> parseNamedQueries(Element entity) {
+		Map<String, NamedQuery> nqs = new HashMap<String, NamedQuery>();
+
+		for (Element property : DomUtils.getChildElementsByTagName(entity, "query")) {
+
+			String name = property.getAttribute("name");
+			if (!StringUtils.hasText(name)) {
+				throw new IllegalStateException("name attribute must not be empty");
+			}
+
+			String attr = property.getAttribute("query");
+			boolean attrHasText = StringUtils.hasText(attr);
+			String textContent = property.getTextContent();
+			boolean textContentHasText = StringUtils.hasText(textContent);
+
+			if (attrHasText && textContentHasText) {
+				throw new IllegalStateException("ambiguous query content:  can't specify both attribute and text content");
+			} else if (!(attrHasText || textContentHasText)) {
+				throw new IllegalStateException("no query given:  must specify either attribute or text content");
+			}
+			String value = attrHasText ? attr.trim() : textContent.trim();
+			NamedQuery nq = new NamedQuery(name, value);
+
+			nqs.put(nq.getName(), nq);
+		}
+
+		return nqs;
 	}
 
 	protected Map<String, PropertyMapping> parsePropertyMappings(Element entity) {

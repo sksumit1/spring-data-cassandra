@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 import org.springframework.beans.BeansException;
@@ -37,6 +38,7 @@ import org.springframework.data.mapping.context.AbstractMappingContext;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.mapping.model.MappingException;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
+import org.springframework.data.repository.core.support.PropertiesBasedNamedQueries;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
@@ -253,6 +255,12 @@ public class BasicCassandraMappingContext extends
 		for (PropertyMapping mapping : entityMapping.getPropertyMappings().values()) {
 			processMappingOverride(entity, mapping);
 		}
+
+		Properties namedQueries = new Properties();
+		for (NamedQuery query : entityMapping.getNamedQueries().values()) {
+			namedQueries.setProperty(query.getName(), query.getValue());
+		}
+		entity.setNamedQueries(new PropertiesBasedNamedQueries(namedQueries));
 	}
 
 	protected void processMappingOverride(CassandraPersistentEntity<?> entity, PropertyMapping mapping) {

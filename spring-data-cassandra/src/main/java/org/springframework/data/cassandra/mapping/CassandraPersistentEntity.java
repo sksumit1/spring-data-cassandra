@@ -22,6 +22,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.model.MutablePersistentEntity;
+import org.springframework.data.repository.core.NamedQueries;
 
 /**
  * Cassandra specific {@link PersistentEntity} abstraction.
@@ -51,4 +52,8 @@ public interface CassandraPersistentEntity<T> extends MutablePersistentEntity<T,
 	ApplicationContext getApplicationContext();
 
 	void setForceQuote(boolean forceQuote);
+
+	void setNamedQueries(NamedQueries namedQueries);
+
+	NamedQueries getNamedQueries();
 }

@@ -48,6 +48,11 @@ public class EntityMapping {
 	 */
 	protected Map<String, PropertyMapping> propertyMappings = new HashMap<String, PropertyMapping>();
 
+	/**
+	 * The {@link NamedQuery} for each named query, keyed on query name.
+	 */
+	protected Map<String, NamedQuery> namedQueries = new HashMap<String, NamedQuery>();
+
 	public EntityMapping(String entityClassName, String tableName) {
 		this(entityClassName, tableName, Boolean.FALSE.toString());
 	}
@@ -119,5 +124,14 @@ public class EntityMapping {
 
 	public Map<String, PropertyMapping> getPropertyMappings() {
 		return Collections.unmodifiableMap(propertyMappings);
+	}
+
+	public void setNamedQueries(Map<String, NamedQuery> namedQueries) {
+		namedQueries = namedQueries == null ? new HashMap<String, NamedQuery>() : namedQueries;
+		this.namedQueries = new HashMap<String, NamedQuery>(namedQueries);
+	}
+
+	public Map<String, NamedQuery> getNamedQueries() {
+		return Collections.unmodifiableMap(namedQueries);
 	}
 }

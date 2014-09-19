@@ -33,6 +33,7 @@ import org.springframework.data.mapping.AssociationHandler;
 import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.data.mapping.model.BasicPersistentEntity;
 import org.springframework.data.mapping.model.MappingException;
+import org.springframework.data.repository.core.NamedQueries;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.util.Assert;
@@ -55,6 +56,7 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	protected CassandraPersistentEntityMetadataVerifier verifier = DEFAULT_VERIFIER;
 	protected ApplicationContext context;
 	protected Boolean forceQuote;
+	protected NamedQueries namedQueries;
 
 	public BasicCassandraPersistentEntity(TypeInformation<T> typeInformation) {
 		this(typeInformation, null);
@@ -216,5 +218,15 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	@Override
 	public ApplicationContext getApplicationContext() {
 		return context;
+	}
+
+	@Override
+	public NamedQueries getNamedQueries() {
+		return namedQueries;
+	}
+
+	@Override
+	public void setNamedQueries(NamedQueries namedQueries) {
+		this.namedQueries = namedQueries;
 	}
 }
