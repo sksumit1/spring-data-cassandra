@@ -519,6 +519,11 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	protected QueryCancellor doExecuteAsync(final Statement q, final AsynchronousQueryListener listener) {
+		return doExecuteAsync(q, listener, null);
+	}
+
+	protected QueryCancellor doExecuteAsync(final Statement q, final AsynchronousQueryListener listener,
+			final QueryOptions options) {
 
 		return doExecute(new SessionCallback<QueryCancellor>() {
 
@@ -527,6 +532,10 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 				if (log.isDebugEnabled()) {
 					log.debug("asynchronously executing [{}]", q.toString());
+				}
+
+				if (options != null) {
+					addQueryOptions(q, options);
 				}
 
 				final ResultSetFuture rsf = s.executeAsync(q);
@@ -1487,8 +1496,13 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	@Override
-	public QueryCancellor queryForMapAsynchronously(String cql, final QueryForMapListener listener)
-			throws DataAccessException {
+	public QueryCancellor queryForMapAsynchronously(String cql, QueryForMapListener listener) throws DataAccessException {
+		return queryForMapAsynchronously(cql, listener, null);
+	}
+
+	@Override
+	public QueryCancellor queryForMapAsynchronously(String cql, final QueryForMapListener listener,
+			final QueryOptions options) throws DataAccessException {
 
 		return doExecuteAsync(new SimpleStatement(cql), new AsynchronousQueryListener() {
 
@@ -1500,7 +1514,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 					listener.onException(translateExceptionIfPossible(e));
 				}
 			}
-		});
+		}, options);
 	}
 
 	@Override
@@ -1538,8 +1552,14 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	@Override
+	public <T> QueryCancellor queryForObjectAsynchronously(String cql, Class<T> requiredType,
+			QueryForObjectListener<T> listener) throws DataAccessException {
+		return queryForObjectAsynchronously(cql, requiredType, listener, null);
+	}
+
+	@Override
 	public <T> QueryCancellor queryForObjectAsynchronously(String cql, final Class<T> requiredType,
-			final QueryForObjectListener<T> listener) throws DataAccessException {
+			final QueryForObjectListener<T> listener, QueryOptions options) throws DataAccessException {
 
 		return doExecuteAsync(new SimpleStatement(cql), new AsynchronousQueryListener() {
 
@@ -1551,12 +1571,18 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 					listener.onException(translateExceptionIfPossible(e));
 				}
 			}
-		});
+		}, options);
+	}
+
+	@Override
+	public <T> QueryCancellor queryForObjectAsynchronously(String cql, RowMapper<T> rowMapper,
+			QueryForObjectListener<T> listener) throws DataAccessException {
+		return queryForObjectAsynchronously(cql, rowMapper, listener, null);
 	}
 
 	@Override
 	public <T> QueryCancellor queryForObjectAsynchronously(String cql, final RowMapper<T> rowMapper,
-			final QueryForObjectListener<T> listener) throws DataAccessException {
+			final QueryForObjectListener<T> listener, QueryOptions options) throws DataAccessException {
 
 		return doExecuteAsync(new SimpleStatement(cql), new AsynchronousQueryListener() {
 
@@ -1568,7 +1594,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 					listener.onException(translateExceptionIfPossible(e));
 				}
 			}
-		});
+		}, options);
 	}
 
 	@Override

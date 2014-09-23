@@ -644,6 +644,19 @@ public interface CqlOperations {
 			throws DataAccessException;
 
 	/**
+	 * Executes the provided string CQL query, and maps the first row returned with the supplied {@link RowMapper}.
+	 * 
+	 * @param cql The string query CQL.
+	 * @param rowMapper The {@link RowMapper} to convert the row into an object of type <code>T</code>.
+	 * @param listener The listener that receives the results upon completion.
+	 * @param options The {@link QueryOptions} to use. May be <code>null</code>.
+	 * @return A {@link QueryCancellor} that can be used to cancel the query.
+	 * @throws DataAccessException
+	 */
+	<T> QueryCancellor queryForObjectAsynchronously(String cql, RowMapper<T> rowMapper,
+			QueryForObjectListener<T> listener, QueryOptions options) throws DataAccessException;
+
+	/**
 	 * Executes the provided {@link Select} query, and maps the first row returned with the supplied {@link RowMapper}.
 	 * 
 	 * @param select The {@link Select} query to execute.
@@ -728,6 +741,19 @@ public interface CqlOperations {
 			throws DataAccessException;
 
 	/**
+	 * Executes the provided select CQL query and returns the first column of the first Row as an object of type
+	 * <code>T</code>.
+	 * 
+	 * @param cql The select query CQL. Must not be <code>null</code> or blank.
+	 * @param requiredType The type to convert the first column of the first row to. Must not be <code>null</code>.
+	 * @param options The {@link QueryOptions} to use. May be <code>null</code>.
+	 * @return A {@link QueryCancellor} that can be used to cancel the query if necessary. Must not be <code>null</code>.
+	 * @throws DataAccessException
+	 */
+	<T> QueryCancellor queryForObjectAsynchronously(String cql, Class<T> requiredType,
+			QueryForObjectListener<T> listener, QueryOptions options) throws DataAccessException;
+
+	/**
 	 * Executes the provided Select query and tries to return the first column of the first Row as a Class<T>.
 	 * 
 	 * @param select The Select Query
@@ -780,6 +806,20 @@ public interface CqlOperations {
 	 * @throws DataAccessException
 	 */
 	QueryCancellor queryForMapAsynchronously(String cql, QueryForMapListener listener) throws DataAccessException;
+
+	/**
+	 * Executes the provided CQL query asynchronously and maps the first row to a {@link Map}&lt;String,Object&gt;.
+	 * Additional rows are ignored.
+	 * 
+	 * @param cql The select query CQL. Must not be <code>null</code> or blank.
+	 * @param listener The {@link QueryForMapListener} that will recieve the results upon query completion. Must not be
+	 *          <code>null</code>.
+	 * @param options The {@link QueryOptions} to use. May be <code>null</code>.
+	 * @return A {@link QueryCancellor} that can be used to cancel the query if necessary. Must not be <code>null</code>.
+	 * @throws DataAccessException
+	 */
+	QueryCancellor queryForMapAsynchronously(String cql, QueryForMapListener listener, QueryOptions options)
+			throws DataAccessException;
 
 	/**
 	 * Executes the provided {@link Select} query asynchronously and maps the first row to a {@link Map}
