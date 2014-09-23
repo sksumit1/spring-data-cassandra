@@ -20,7 +20,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.cassandra.core.AsynchronousQueryListener;
 import org.springframework.cassandra.core.CqlTemplate;
+import org.springframework.cassandra.core.QueryCancellor;
+import org.springframework.cassandra.core.QueryForObjectListener;
 import org.springframework.cassandra.core.QueryOptions;
 import org.springframework.cassandra.core.SessionCallback;
 import org.springframework.cassandra.core.WriteOptions;
@@ -39,8 +42,11 @@ import org.springframework.data.mapping.model.BeanWrapper;
 import org.springframework.util.Assert;
 
 import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.ResultSetFuture;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
+import com.datastax.driver.core.SimpleStatement;
+import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.querybuilder.Batch;
 import com.datastax.driver.core.querybuilder.Clause;
 import com.datastax.driver.core.querybuilder.Delete;
@@ -138,7 +144,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 
 	@Override
 	public <T> void delete(List<T> entities, QueryOptions options) {
-		batchDelete(entities, options, false);
+		doBatchDelete(entities, options);
 	}
 
 	@Override
@@ -162,27 +168,47 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 
 	@Override
 	public <T> void delete(T entity, QueryOptions options) {
-		delete(entity, options, false);
+		doDelete(entity, options);
 	}
 
 	@Override
-	public <T> void deleteAsynchronously(List<T> entities) {
-		deleteAsynchronously(entities, null);
+	public <T> QueryCancellor deleteAsynchronously(List<T> entities) {
+		return doBatchDeleteAsync(entities, null, null);
 	}
 
 	@Override
-	public <T> void deleteAsynchronously(List<T> entities, QueryOptions options) {
-		batchDelete(entities, options, true);
+	public <T> QueryCancellor deleteAsynchronously(List<T> entities, QueryOptions options) {
+		return doBatchDeleteAsync(entities, null, options);
 	}
 
 	@Override
-	public <T> void deleteAsynchronously(T entity) {
-		deleteAsynchronously(entity, null);
+	public <T> QueryCancellor deleteAsynchronously(List<T> entities, DeletionListener listener) {
+		return doBatchDeleteAsync(entities, listener, null);
 	}
 
 	@Override
-	public <T> void deleteAsynchronously(T entity, QueryOptions options) {
-		delete(entity, options, true);
+	public <T> QueryCancellor deleteAsynchronously(List<T> entities, DeletionListener listener, QueryOptions options) {
+		return doBatchDeleteAsync(entities, listener, options);
+	}
+
+	@Override
+	public <T> QueryCancellor deleteAsynchronously(T entity) {
+		return doDeleteAsync(entity, null, null);
+	}
+
+	@Override
+	public <T> QueryCancellor deleteAsynchronously(T entity, QueryOptions options) {
+		return doDeleteAsync(entity, null, options);
+	}
+
+	@Override
+	public <T> QueryCancellor deleteAsynchronously(T entity, DeletionListener listener) {
+		return doDeleteAsync(entity, listener, null);
+	}
+
+	@Override
+	public <T> QueryCancellor deleteAsynchronously(T entity, DeletionListener listener, QueryOptions options) {
+		return doDeleteAsync(entity, listener, options);
 	}
 
 	@Override
@@ -197,7 +223,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 
 	@Override
 	public <T> List<T> insert(List<T> entities, WriteOptions options) {
-		return batchInsert(entities, options, false);
+		return doBatchInsert(entities, options);
 	}
 
 	@Override
@@ -207,27 +233,51 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 
 	@Override
 	public <T> T insert(T entity, WriteOptions options) {
-		return insert(entity, options, false);
+		return doInsert(entity, options);
 	}
 
 	@Override
 	public <T> List<T> insertAsynchronously(List<T> entities) {
-		return insertAsynchronously(entities, null);
+		insertAsynchronously(entities, null, null);
+		return entities;
 	}
 
 	@Override
 	public <T> List<T> insertAsynchronously(List<T> entities, WriteOptions options) {
-		return batchInsert(entities, options, true);
+		insertAsynchronously(entities, null, options);
+		return entities;
+	}
+
+	@Override
+	public <T> QueryCancellor insertAsynchronously(List<T> entities, WriteListener listener) {
+		return insertAsynchronously(entities, listener, null);
+	}
+
+	@Override
+	public <T> QueryCancellor insertAsynchronously(List<T> entities, WriteListener listener, WriteOptions options) {
+		return doBatchInsertAsync(entities, listener, options);
 	}
 
 	@Override
 	public <T> T insertAsynchronously(T entity) {
-		return insertAsynchronously(entity, null);
+		insertAsynchronously(entity, null, null);
+		return entity;
 	}
 
 	@Override
 	public <T> T insertAsynchronously(T entity, WriteOptions options) {
-		return insert(entity, options, true);
+		insertAsynchronously(entity, null, options);
+		return entity;
+	}
+
+	@Override
+	public <T> QueryCancellor insertAsynchronously(T entity, WriteListener listener) {
+		return insertAsynchronously(entity, listener, null);
+	}
+
+	@Override
+	public <T> QueryCancellor insertAsynchronously(T entity, WriteListener listener, WriteOptions options) {
+		return doInsertAsync(entity, listener, options);
 	}
 
 	@Override
@@ -372,7 +422,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 
 	@Override
 	public <T> List<T> update(List<T> entities, WriteOptions options) {
-		return batchUpdate(entities, options, false);
+		return doBatchUpdate(entities, options);
 	}
 
 	@Override
@@ -382,27 +432,51 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 
 	@Override
 	public <T> T update(T entity, WriteOptions options) {
-		return update(entity, options, false);
+		return doUpdate(entity, options);
 	}
 
 	@Override
 	public <T> List<T> updateAsynchronously(List<T> entities) {
-		return updateAsynchronously(entities, null);
+		updateAsynchronously(entities, null, null);
+		return entities;
 	}
 
 	@Override
 	public <T> List<T> updateAsynchronously(List<T> entities, WriteOptions options) {
-		return batchUpdate(entities, options, true);
+		updateAsynchronously(entities, null, options);
+		return entities;
+	}
+
+	@Override
+	public <T> QueryCancellor updateAsynchronously(List<T> entities, WriteListener listener) {
+		return updateAsynchronously(entities, listener, null);
+	}
+
+	@Override
+	public <T> QueryCancellor updateAsynchronously(List<T> entities, WriteListener listener, WriteOptions options) {
+		return doBatchUpdateAsync(entities, listener, options);
 	}
 
 	@Override
 	public <T> T updateAsynchronously(T entity) {
-		return updateAsynchronously(entity, null);
+		updateAsynchronously(entity, null, null);
+		return entity;
 	}
 
 	@Override
 	public <T> T updateAsynchronously(T entity, WriteOptions options) {
-		return update(entity, options, true);
+		updateAsynchronously(entity, null, options);
+		return entity;
+	}
+
+	@Override
+	public <T> QueryCancellor updateAsynchronously(T entity, WriteListener listener) {
+		return updateAsynchronously(entity, listener, null);
+	}
+
+	@Override
+	public <T> QueryCancellor updateAsynchronously(T entity, WriteListener listener, WriteOptions options) {
+		return doUpdateAsync(entity, listener, options);
 	}
 
 	protected <T> CqlIdentifier determineTableName(T obj) {
@@ -498,42 +572,66 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		return null;
 	}
 
-	/**
-	 * Perform the deletion on a list of objects
-	 * 
-	 * @param tableName
-	 * @param objectToRemove
-	 */
-	protected <T> void batchDelete(List<T> entities, QueryOptions options, boolean asynchronously) {
-
-		Assert.notEmpty(entities);
-
-		Batch b = createDeleteBatchQuery(getTableName(entities.get(0).getClass()).toCql(), entities, options,
-				cassandraConverter);
-
-		if (asynchronously) {
-			executeAsynchronously(b);
-		} else {
-			execute(b);
-		}
+	protected <T> void doBatchDelete(List<T> entities, QueryOptions options) {
+		execute(createDeleteBatchQuery(getTableName(entities.get(0).getClass()).toCql(), entities, options,
+				cassandraConverter));
 	}
 
-	protected <T> T insert(T entity, WriteOptions options, boolean asynchronously) {
+	protected <T> QueryCancellor doBatchDeleteAsync(final List<T> entities, final DeletionListener listener,
+			QueryOptions options) {
+
+		AsynchronousQueryListener aql = listener == null ? null : new AsynchronousQueryListener() {
+
+			@Override
+			public void onQueryComplete(ResultSetFuture rsf) {
+				try {
+					rsf.getUninterruptibly();
+					listener.onDeletionComplete(entities);
+				} catch (Exception e) {
+					listener.onException(e);
+				}
+			}
+		};
+
+		return executeAsynchronously(
+				createDeleteBatchQuery(getTableName(entities.get(0).getClass()).toCql(), entities, options, cassandraConverter),
+				aql);
+	}
+
+	protected <T> T doInsert(T entity, WriteOptions options) {
+
+		Assert.notNull(entity);
+		Insert insert = createInsertQuery(getTableName(entity.getClass()).toCql(), entity, options, cassandraConverter);
+		execute(insert);
+		return entity;
+	}
+
+	protected <T> QueryCancellor doInsertAsync(final T entity, final WriteListener listener, WriteOptions options) {
 
 		Assert.notNull(entity);
 
 		Insert insert = createInsertQuery(getTableName(entity.getClass()).toCql(), entity, options, cassandraConverter);
 
-		if (asynchronously) {
-			executeAsynchronously(insert);
-		} else {
-			execute(insert);
-		}
+		AsynchronousQueryListener aql = listener == null ? null : new AsynchronousQueryListener() {
 
-		return entity;
+			@Override
+			public void onQueryComplete(ResultSetFuture rsf) {
+				listener.onWriteComplete(CollectionUtils.toList(entity));
+			}
+		};
+
+		return executeAsynchronously(insert, aql);
 	}
 
-	protected <T> List<T> batchInsert(List<T> entities, WriteOptions options, boolean asychronously) {
+	protected <T> List<T> doBatchInsert(List<T> entities, WriteOptions options) {
+		return doBatchWrite(entities, options, true);
+	}
+
+	protected <T> List<T> doBatchUpdate(List<T> entities, WriteOptions options) {
+		return doBatchWrite(entities, options, false);
+	}
+
+	protected <T> List<T> doBatchWrite(List<T> entities, WriteOptions options, boolean insert) {
 
 		if (entities == null || entities.size() == 0) {
 			if (logger.isWarnEnabled()) {
@@ -542,84 +640,136 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 			return entities;
 		}
 
-		Batch b = createInsertBatchQuery(getTableName(entities.get(0).getClass()).toCql(), entities, options,
-				cassandraConverter);
-
-		if (asychronously) {
-			executeAsynchronously(b);
-		} else {
-			execute(b);
-		}
+		String tableName = getTableName(entities.get(0).getClass()).toCql();
+		Batch b = insert ? createInsertBatchQuery(tableName, entities, options, cassandraConverter)
+				: createUpdateBatchQuery(tableName, entities, options, cassandraConverter);
+		execute(b);
 
 		return entities;
 	}
 
 	/**
-	 * Update a Batch of rows in a Cassandra CQL Table
+	 * Asynchronously performs a batch insert or update.
 	 * 
-	 * @param tableName
-	 * @param entities
-	 * @param optionsByName
-	 * @param updateAsychronously
-	 * @return
+	 * @param entities The entities to insert or update.
+	 * @param listener The listener that will receive notification of the completion of the batch insert or update. May be
+	 *          <code>null</code>.
+	 * @param options The {@link WriteOptions} to use. May be <code>null</code>.
+	 * @return A {@link QueryCancellor} that can be used to cancel the query if necessary.
 	 */
-	protected <T> List<T> batchUpdate(List<T> entities, WriteOptions options, boolean asychronously) {
-
-		Assert.notEmpty(entities);
-
-		Batch b = toUpdateBatchQuery(getTableName(entities.get(0).getClass()).toCql(), entities, options,
-				cassandraConverter);
-
-		if (asychronously) {
-			executeAsynchronously(b);
-		} else {
-			execute(b);
-		}
-
-		return entities;
+	protected <T> QueryCancellor doBatchInsertAsync(final List<T> entities, final WriteListener listener,
+			WriteOptions options) {
+		return doBatchWriteAsync(entities, listener, options, true);
 	}
 
 	/**
-	 * Perform the removal of a Row.
+	 * Asynchronously performs a batch insert or update.
 	 * 
-	 * @param tableName
-	 * @param entity
+	 * @param entities The entities to insert or update.
+	 * @param listener The listener that will receive notification of the completion of the batch insert or update. May be
+	 *          <code>null</code>.
+	 * @param options The {@link WriteOptions} to use. May be <code>null</code>.
+	 * @return A {@link QueryCancellor} that can be used to cancel the query if necessary.
 	 */
-	protected <T> void delete(T entity, QueryOptions options, boolean asynchronously) {
+	protected <T> QueryCancellor doBatchUpdateAsync(final List<T> entities, final WriteListener listener,
+			WriteOptions options) {
+		return doBatchWriteAsync(entities, listener, options, false);
+	}
+
+	/**
+	 * Asynchronously performs a batch insert or update.
+	 * 
+	 * @param entities The entities to insert or update.
+	 * @param listener The listener that will receive notification of the completion of the batch insert or update. May be
+	 *          <code>null</code>.
+	 * @param options The {@link WriteOptions} to use. May be <code>null</code>.
+	 * @param insert If <code>true</code>, then an insert is performed, else an update is performed.
+	 * @return A {@link QueryCancellor} that can be used to cancel the query if necessary.
+	 */
+	protected <T> QueryCancellor doBatchWriteAsync(final List<T> entities, final WriteListener listener,
+			WriteOptions options, boolean insert) {
+
+		if (entities == null || entities.size() == 0) {
+			if (logger.isWarnEnabled()) {
+				logger.warn("no-op due to given null or empty list");
+			}
+			return new QueryCancellor() {
+
+				@Override
+				public void cancelQuery() {
+					if (logger.isWarnEnabled()) {
+						logger.warn("no-op query cancellation due to given null or empty list");
+					}
+				}
+			};
+		}
+
+		String tableName = getTableName(entities.get(0).getClass()).toCql();
+		Batch b = insert ? createInsertBatchQuery(tableName, entities, options, cassandraConverter)
+				: createUpdateBatchQuery(tableName, entities, options, cassandraConverter);
+
+		AsynchronousQueryListener aql = listener == null ? null : new AsynchronousQueryListener() {
+
+			@Override
+			public void onQueryComplete(ResultSetFuture rsf) {
+				try {
+					rsf.getUninterruptibly();
+					listener.onWriteComplete(entities);
+				} catch (Exception e) {
+					listener.onException(e);
+				}
+			}
+		};
+
+		return executeAsynchronously(b, aql);
+	}
+
+	protected <T> void doDelete(T entity, QueryOptions options) {
+
+		Assert.notNull(entity);
+		Delete delete = createDeleteQuery(getTableName(entity.getClass()).toCql(), entity, options, cassandraConverter);
+		execute(delete);
+	}
+
+	protected <T> QueryCancellor doDeleteAsync(final T entity, final DeletionListener listener, QueryOptions options) {
 
 		Assert.notNull(entity);
 
 		Delete delete = createDeleteQuery(getTableName(entity.getClass()).toCql(), entity, options, cassandraConverter);
 
-		if (asynchronously) {
-			executeAsynchronously(delete);
-		} else {
-			execute(delete);
-		}
+		AsynchronousQueryListener aql = listener == null ? null : new AsynchronousQueryListener() {
+			@Override
+			public void onQueryComplete(ResultSetFuture rsf) {
+				listener.onDeletionComplete(CollectionUtils.toList(entity));
+			}
+		};
+
+		return executeAsynchronously(delete, aql);
 	}
 
-	/**
-	 * Update a row into a Cassandra CQL Table
-	 * 
-	 * @param tableName
-	 * @param entity
-	 * @param optionsByName
-	 * @param updateAsychronously
-	 * @return
-	 */
-	protected <T> T update(T entity, WriteOptions options, boolean asychronously) {
+	protected <T> T doUpdate(T entity, WriteOptions options) {
+
+		Assert.notNull(entity);
+		Update update = createUpdateQuery(getTableName(entity.getClass()).toCql(), entity, options, cassandraConverter);
+		execute(update);
+		return entity;
+	}
+
+	protected <T> QueryCancellor doUpdateAsync(final T entity, final WriteListener listener, WriteOptions options) {
 
 		Assert.notNull(entity);
 
-		Update update = toUpdateQuery(getTableName(entity.getClass()).toCql(), entity, options, cassandraConverter);
+		Insert insert = createInsertQuery(getTableName(entity.getClass()).toCql(), entity, options, cassandraConverter);
 
-		if (asychronously) {
-			executeAsynchronously(update);
-		} else {
-			execute(update);
-		}
+		AsynchronousQueryListener aql = listener == null ? null : new AsynchronousQueryListener() {
 
-		return entity;
+			@Override
+			public void onQueryComplete(ResultSetFuture rsf) {
+				listener.onWriteComplete(CollectionUtils.toList(entity));
+			}
+		};
+
+		return executeAsynchronously(insert, aql);
 	}
 
 	/**
@@ -635,18 +785,19 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 			EntityWriter<Object, Object> entityWriter) {
 
 		Insert insert = QueryBuilder.insertInto(tableName);
-
-		/*
-		 * Write properties
-		 */
 		entityWriter.write(objectToSave, insert);
-
-		/*
-		 * Add Query Options
-		 */
 		CqlTemplate.addWriteOptions(insert, options);
-
 		return insert;
+	}
+
+	/**
+	 * @deprecated Method renamed. Use {@link #createUpdateQuery(String, Object, WriteOptions, EntityWriter)}
+	 * @see #createUpdateQuery(String, Object, WriteOptions, EntityWriter)
+	 */
+	@Deprecated
+	public static Update toUpdateQueryX(String tableName, Object objectToSave, WriteOptions options,
+			EntityWriter<Object, Object> entityWriter) {
+		return createUpdateQuery(tableName, objectToSave, options, entityWriter);
 	}
 
 	/**
@@ -658,22 +809,23 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	 * @param optionsByName
 	 * @return The Query object to run with session.execute();
 	 */
-	public static Update toUpdateQuery(String tableName, Object objectToSave, WriteOptions options,
+	public static Update createUpdateQuery(String tableName, Object objectToSave, WriteOptions options,
 			EntityWriter<Object, Object> entityWriter) {
 
 		Update update = QueryBuilder.update(tableName);
-
-		/*
-		 * Write properties
-		 */
 		entityWriter.write(objectToSave, update);
-
-		/*
-		 * Add Query Options
-		 */
 		CqlTemplate.addWriteOptions(update, options);
-
 		return update;
+	}
+
+	/**
+	 * @deprecated Method renamed. Use {@link #createUpdateBatchQuery(String, List, WriteOptions, EntityWriter)}
+	 * @see #createUpdateBatchQuery(String, List, WriteOptions, EntityWriter)
+	 */
+	@Deprecated
+	public static <T> Batch toUpdateBatchQuery(String tableName, List<T> objectsToSave, WriteOptions options,
+			EntityWriter<Object, Object> entityWriter) {
+		return createUpdateBatchQuery(tableName, objectsToSave, options, entityWriter);
 	}
 
 	/**
@@ -685,27 +837,18 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	 * @param optionsByName
 	 * @return The Query object to run with session.execute();
 	 */
-	public static <T> Batch toUpdateBatchQuery(String tableName, List<T> objectsToSave, WriteOptions options,
+	public static <T> Batch createUpdateBatchQuery(String tableName, List<T> objectsToSave, WriteOptions options,
 			EntityWriter<Object, Object> entityWriter) {
 
-		/*
-		 * Return variable is a Batch statement
-		 */
 		Batch b = QueryBuilder.batch();
 
 		for (T objectToSave : objectsToSave) {
-
-			b.add(toUpdateQuery(tableName, objectToSave, options, entityWriter));
-
+			b.add(createUpdateQuery(tableName, objectToSave, options, entityWriter));
 		}
 
-		/*
-		 * Add Query Options
-		 */
 		CqlTemplate.addQueryOptions(b, options);
 
 		return b;
-
 	}
 
 	/**
@@ -745,13 +888,9 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 
 		Delete.Selection ds = QueryBuilder.delete();
 		Delete delete = ds.from(tableName);
-
 		Where w = delete.where();
-
 		entityWriter.write(object, w);
-
 		CqlTemplate.addQueryOptions(delete, options);
-
 		return delete;
 	}
 
@@ -789,5 +928,60 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		}
 
 		truncate(mappingContext.getPersistentEntity(clazz).getTableName());
+	}
+
+	@Override
+	public <T> QueryCancellor selectOneAsynchronously(Select select, Class<T> type, QueryForObjectListener<T> listener) {
+		return selectOneAsynchronously(select, type, listener, null);
+	}
+
+	@Override
+	public <T> QueryCancellor selectOneAsynchronously(String cql, Class<T> type, QueryForObjectListener<T> listener) {
+		return selectOneAsynchronously(cql, type, listener, null);
+	}
+
+	@Override
+	public <T> QueryCancellor selectOneAsynchronously(Select select, Class<T> type, QueryForObjectListener<T> listener,
+			QueryOptions options) {
+		return doSelectOneAsync(select, type, listener, options);
+	}
+
+	@Override
+	public <T> QueryCancellor selectOneAsynchronously(String cql, Class<T> type, QueryForObjectListener<T> listener,
+			QueryOptions options) {
+		return doSelectOneAsync(cql, type, listener, options);
+	}
+
+	protected <T> QueryCancellor doSelectOneAsync(final Object query, final Class<T> type,
+			final QueryForObjectListener<T> listener, QueryOptions options) {
+
+		AsynchronousQueryListener aql = new AsynchronousQueryListener() {
+
+			@Override
+			public void onQueryComplete(ResultSetFuture rsf) {
+				try {
+					ResultSet rs = rsf.getUninterruptibly();
+					Iterator<Row> iterator = rs.iterator();
+					if (iterator.hasNext()) {
+						Row row = iterator.next();
+						T result = new CassandraConverterRowCallback<T>(cassandraConverter, type).doWith(row);
+						if (iterator.hasNext()) {
+							throw new DuplicateKeyException("found two or more results in query " + query);
+						}
+						listener.onQueryComplete(result);
+					}
+				} catch (Exception e) {
+					listener.onException(e);
+				}
+			}
+		};
+		if (query instanceof String) {
+			return queryAsynchronously((String) query, aql, options);
+		}
+		if (query instanceof Select) {
+			return queryAsynchronously((Select) query, aql);
+		}
+		throw new IllegalArgumentException(String.format("Expected type String or Select; got type [%s] with value [%s]",
+				query.getClass(), query));
 	}
 }

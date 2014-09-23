@@ -31,7 +31,7 @@ public class BasicQueryCancellor implements QueryCancellor {
 	}
 
 	@Override
-	public void cancelQuery(boolean mayInterruptIfRunning) {
-		rsf.cancel(mayInterruptIfRunning);
+	public void cancelQuery() {
+		rsf.cancel(true);
 	}
 }

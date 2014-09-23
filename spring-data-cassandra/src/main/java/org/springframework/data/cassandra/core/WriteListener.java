@@ -13,20 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.cassandra.core;
+package org.springframework.data.cassandra.core;
 
-import com.datastax.driver.core.ResultSetFuture;
+import java.util.Collection;
+
+import com.datastax.driver.core.ResultSet;
 
 /**
- * Interface allowing a caller to cancel an asynchronous query.
+ * Listener for asynchronous repository insert or update methods.
  * 
  * @author Matthew T. Adams
  */
-public interface QueryCancellor {
+public interface WriteListener {
 
 	/**
-	 * Cancels the query operation that this cancellor came from. Usually delegates to
-	 * {@link ResultSetFuture#cancel(boolean)}.
+	 * Called upon completion of the asynchronous insert or update.
+	 * 
+	 * @param entities The entities inserted or updated.
 	 */
-	void cancelQuery();
+	void onWriteComplete(Collection<?> entities);
+
+	/**
+	 * Called if an exception is raised while getting or converting the {@link ResultSet}.
+	 */
+	void onException(Exception x);
 }

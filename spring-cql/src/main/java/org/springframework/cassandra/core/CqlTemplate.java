@@ -518,6 +518,39 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 		});
 	}
 
+	protected QueryCancellor doExecuteAsync(final Statement q, final AsynchronousQueryListener listener) {
+
+		return doExecute(new SessionCallback<QueryCancellor>() {
+
+			@Override
+			public QueryCancellor doInSession(Session s) throws DataAccessException {
+
+				if (log.isDebugEnabled()) {
+					log.debug("asynchronously executing [{}]", q.toString());
+				}
+
+				final ResultSetFuture rsf = s.executeAsync(q);
+
+				if (listener != null) {
+					rsf.addListener(new Runnable() {
+
+						@Override
+						public void run() {
+							listener.onQueryComplete(rsf);
+						}
+					}, new Executor() {
+
+						@Override
+						public void execute(Runnable command) {
+							command.run();
+						}
+					});
+				}
+				return new BasicQueryCancellor(rsf);
+			}
+		});
+	}
+
 	/**
 	 * @param row
 	 * @return
@@ -692,13 +725,15 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 			@Override
 			public QueryCancellor doInSession(Session s) throws DataAccessException {
 				final ResultSetFuture rsf = s.executeAsync(query);
-				Runnable wrapper = new Runnable() {
-					@Override
-					public void run() {
-						listener.onQueryComplete(rsf);
-					}
-				};
-				rsf.addListener(wrapper, executor);
+				if (listener != null) {
+					Runnable wrapper = new Runnable() {
+						@Override
+						public void run() {
+							listener.onQueryComplete(rsf);
+						}
+					};
+					rsf.addListener(wrapper, executor);
+				}
 				return new BasicQueryCancellor(rsf);
 			}
 		});
@@ -1232,6 +1267,36 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	@Override
+	public QueryCancellor executeAsynchronously(Truncate truncate, AsynchronousQueryListener listener)
+			throws DataAccessException {
+		return doExecuteAsync(truncate, listener);
+	}
+
+	@Override
+	public QueryCancellor executeAsynchronously(Delete delete, AsynchronousQueryListener listener)
+			throws DataAccessException {
+		return doExecuteAsync(delete, listener);
+	}
+
+	@Override
+	public QueryCancellor executeAsynchronously(Insert insert, AsynchronousQueryListener listener)
+			throws DataAccessException {
+		return doExecuteAsync(insert, listener);
+	}
+
+	@Override
+	public QueryCancellor executeAsynchronously(Update update, AsynchronousQueryListener listener)
+			throws DataAccessException {
+		return doExecuteAsync(update, listener);
+	}
+
+	@Override
+	public QueryCancellor executeAsynchronously(Batch batch, AsynchronousQueryListener listener)
+			throws DataAccessException {
+		return doExecuteAsync(batch, listener);
+	}
+
+	@Override
 	public ResultSetFuture queryAsynchronously(final Select select) {
 		return execute(new SessionCallback<ResultSetFuture>() {
 			@Override
@@ -1345,4 +1410,201 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 		return processListOfMap(doExecute(select));
 	}
 
+	@Override
+	public <T> QueryCancellor queryForListAsynchronously(Select select, final Class<T> elementType,
+			final QueryForListListener<T> listener) throws DataAccessException {
+
+		Assert.notNull(select);
+		Assert.notNull(elementType);
+		Assert.notNull(listener);
+
+		return doExecuteAsync(select, new AsynchronousQueryListener() {
+
+			@Override
+			public void onQueryComplete(ResultSetFuture rsf) {
+				try {
+					listener.onQueryComplete(processList(rsf.getUninterruptibly(), elementType));
+				} catch (Exception e) {
+					listener.onException(translateExceptionIfPossible(e));
+				}
+			}
+		});
+	}
+
+	@Override
+	public <T> QueryCancellor queryForListAsynchronously(String select, final Class<T> elementType,
+			final QueryForListListener<T> listener) throws DataAccessException {
+
+		Assert.hasText(select);
+		Assert.notNull(elementType);
+		Assert.notNull(listener);
+
+		return doExecuteAsync(new SimpleStatement(select), new AsynchronousQueryListener() {
+
+			@Override
+			public void onQueryComplete(ResultSetFuture rsf) {
+				try {
+					listener.onQueryComplete(processList(rsf.getUninterruptibly(), elementType));
+				} catch (Exception e) {
+					listener.onException(translateExceptionIfPossible(e));
+				}
+			}
+		});
+	}
+
+	@Override
+	public QueryCancellor queryForListOfMapAsynchronously(Select select,
+			final QueryForListListener<Map<String, Object>> listener) throws DataAccessException {
+
+		return doExecuteAsync(select, new AsynchronousQueryListener() {
+
+			@Override
+			public void onQueryComplete(ResultSetFuture rsf) {
+				try {
+					listener.onQueryComplete(processListOfMap(rsf.getUninterruptibly()));
+				} catch (Exception e) {
+					listener.onException(translateExceptionIfPossible(e));
+				}
+			}
+		});
+	}
+
+	@Override
+	public QueryCancellor queryForListOfMapAsynchronously(String cql,
+			final QueryForListListener<Map<String, Object>> listener) throws DataAccessException {
+
+		return doExecuteAsync(new SimpleStatement(cql), new AsynchronousQueryListener() {
+
+			@Override
+			public void onQueryComplete(ResultSetFuture rsf) {
+				try {
+					listener.onQueryComplete(processListOfMap(rsf.getUninterruptibly()));
+				} catch (Exception e) {
+					listener.onException(translateExceptionIfPossible(e));
+				}
+			}
+		});
+	}
+
+	@Override
+	public QueryCancellor queryForMapAsynchronously(String cql, final QueryForMapListener listener)
+			throws DataAccessException {
+
+		return doExecuteAsync(new SimpleStatement(cql), new AsynchronousQueryListener() {
+
+			@Override
+			public void onQueryComplete(ResultSetFuture rsf) {
+				try {
+					listener.onQueryComplete(processMap(rsf.getUninterruptibly()));
+				} catch (Exception e) {
+					listener.onException(translateExceptionIfPossible(e));
+				}
+			}
+		});
+	}
+
+	@Override
+	public QueryCancellor queryForMapAsynchronously(Select select, final QueryForMapListener listener)
+			throws DataAccessException {
+
+		return doExecuteAsync(select, new AsynchronousQueryListener() {
+
+			@Override
+			public void onQueryComplete(ResultSetFuture rsf) {
+				try {
+					listener.onQueryComplete(processMap(rsf.getUninterruptibly()));
+				} catch (Exception e) {
+					listener.onException(translateExceptionIfPossible(e));
+				}
+			}
+		});
+	}
+
+	@Override
+	public <T> QueryCancellor queryForObjectAsynchronously(Select select, final Class<T> requiredType,
+			final QueryForObjectListener<T> listener) throws DataAccessException {
+
+		return doExecuteAsync(select, new AsynchronousQueryListener() {
+
+			@Override
+			public void onQueryComplete(ResultSetFuture rsf) {
+				try {
+					listener.onQueryComplete(processOne(rsf.getUninterruptibly(), requiredType));
+				} catch (Exception e) {
+					listener.onException(translateExceptionIfPossible(e));
+				}
+			}
+		});
+	}
+
+	@Override
+	public <T> QueryCancellor queryForObjectAsynchronously(String cql, final Class<T> requiredType,
+			final QueryForObjectListener<T> listener) throws DataAccessException {
+
+		return doExecuteAsync(new SimpleStatement(cql), new AsynchronousQueryListener() {
+
+			@Override
+			public void onQueryComplete(ResultSetFuture rsf) {
+				try {
+					listener.onQueryComplete(processOne(rsf.getUninterruptibly(), requiredType));
+				} catch (Exception e) {
+					listener.onException(translateExceptionIfPossible(e));
+				}
+			}
+		});
+	}
+
+	@Override
+	public <T> QueryCancellor queryForObjectAsynchronously(String cql, final RowMapper<T> rowMapper,
+			final QueryForObjectListener<T> listener) throws DataAccessException {
+
+		return doExecuteAsync(new SimpleStatement(cql), new AsynchronousQueryListener() {
+
+			@Override
+			public void onQueryComplete(ResultSetFuture rsf) {
+				try {
+					listener.onQueryComplete(processOne(rsf.getUninterruptibly(), rowMapper));
+				} catch (Exception e) {
+					listener.onException(translateExceptionIfPossible(e));
+				}
+			}
+		});
+	}
+
+	@Override
+	public <T> QueryCancellor queryForObjectAsynchronously(Select select, final RowMapper<T> rowMapper,
+			final QueryForObjectListener<T> listener) throws DataAccessException {
+
+		return doExecuteAsync(select, new AsynchronousQueryListener() {
+
+			@Override
+			public void onQueryComplete(ResultSetFuture rsf) {
+				try {
+					listener.onQueryComplete(processOne(rsf.getUninterruptibly(), rowMapper));
+				} catch (Exception e) {
+					listener.onException(translateExceptionIfPossible(e));
+				}
+			}
+		});
+	}
+
+	@Override
+	public ResultSet getResultSetUninterruptibly(ResultSetFuture rsf) {
+		return getResultSetUninterruptibly(rsf, 0, null);
+	}
+
+	@Override
+	public ResultSet getResultSetUninterruptibly(ResultSetFuture rsf, long millis) {
+		return getResultSetUninterruptibly(rsf, millis, TimeUnit.MILLISECONDS);
+	}
+
+	@Override
+	public ResultSet getResultSetUninterruptibly(ResultSetFuture rsf, long timeout, TimeUnit unit) {
+		try {
+			return timeout <= 0 ? rsf.getUninterruptibly() : rsf.getUninterruptibly(timeout,
+					unit == null ? TimeUnit.MILLISECONDS : unit);
+		} catch (Exception x) {
+			throw translateExceptionIfPossible(x);
+		}
+	}
 }

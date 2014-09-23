@@ -53,6 +53,36 @@ import com.datastax.driver.core.querybuilder.Update;
 public interface CqlOperations {
 
 	/**
+	 * Convenient method that delegates to {@link ResultSetFuture#getUninterruptibly()} but translates exceptions if any
+	 * are thrown.
+	 * 
+	 * @param rsf The {@link ResultSetFuture} from which to get the {@link ResultSet}.
+	 * @return The {@link ResultSet}
+	 */
+	ResultSet getResultSetUninterruptibly(ResultSetFuture rsf);
+
+	/**
+	 * Convenient method that delegates to {@link ResultSetFuture#getUninterruptibly()} but translates exceptions if any
+	 * are thrown.
+	 * 
+	 * @param rsf The {@link ResultSetFuture} from which to get the {@link ResultSet}.
+	 * @param timeout The timeout to wait in milliseconds. A nonpositive value means wait indefinitely.
+	 * @return The {@link ResultSet}
+	 */
+	ResultSet getResultSetUninterruptibly(ResultSetFuture rsf, long millis);
+
+	/**
+	 * Convenient method that delegates to {@link ResultSetFuture#getUninterruptibly()} but translates exceptions if any
+	 * are thrown.
+	 * 
+	 * @param rsf The {@link ResultSetFuture} from which to get the {@link ResultSet}.
+	 * @param timeout The timeout to wait. A nonpositive value means wait indefinitely.
+	 * @param unit The {@link TimeUnit} of the timeout.
+	 * @return The {@link ResultSet}
+	 */
+	ResultSet getResultSetUninterruptibly(ResultSetFuture rsf, long timeout, TimeUnit unit);
+
+	/**
 	 * Executes the supplied {@link SessionCallback} in the current Template Session. The implementation of
 	 * SessionCallback can decide whether or not to <code>execute()</code> or <code>executeAsync()</code> the operation.
 	 * 
@@ -217,6 +247,17 @@ public interface CqlOperations {
 	 * @return A {@link ResultSetFuture} that can be used to cancel the query.
 	 */
 	ResultSetFuture executeAsynchronously(Batch batch) throws DataAccessException;
+
+	QueryCancellor executeAsynchronously(Truncate truncate, AsynchronousQueryListener listener)
+			throws DataAccessException;
+
+	QueryCancellor executeAsynchronously(Delete delete, AsynchronousQueryListener listener) throws DataAccessException;
+
+	QueryCancellor executeAsynchronously(Insert insert, AsynchronousQueryListener listener) throws DataAccessException;
+
+	QueryCancellor executeAsynchronously(Update update, AsynchronousQueryListener listener) throws DataAccessException;
+
+	QueryCancellor executeAsynchronously(Batch batch, AsynchronousQueryListener listener) throws DataAccessException;
 
 	/**
 	 * Executes the supplied CQL Query Asynchronously and returns nothing.
@@ -591,6 +632,30 @@ public interface CqlOperations {
 	<T> List<T> process(ResultSet resultSet, RowMapper<T> rowMapper) throws DataAccessException;
 
 	/**
+	 * Executes the provided string CQL query, and maps the first row returned with the supplied {@link RowMapper}.
+	 * 
+	 * @param cql The string query CQL.
+	 * @param rowMapper The {@link RowMapper} to convert the row into an object of type <code>T</code>.
+	 * @param listener The listener that receives the results upon completion.
+	 * @return A {@link QueryCancellor} that can be used to cancel the query.
+	 * @throws DataAccessException
+	 */
+	<T> QueryCancellor queryForObjectAsynchronously(String cql, RowMapper<T> rowMapper, QueryForObjectListener<T> listener)
+			throws DataAccessException;
+
+	/**
+	 * Executes the provided {@link Select} query, and maps the first row returned with the supplied {@link RowMapper}.
+	 * 
+	 * @param select The {@link Select} query to execute.
+	 * @param rowMapper The {@link RowMapper} to convert the row into an object of type <code>T</code>.
+	 * @param listener The listener that receives the results upon completion.
+	 * @return A {@link QueryCancellor} that can be used to cancel the query.
+	 * @throws DataAccessException
+	 */
+	<T> QueryCancellor queryForObjectAsynchronously(Select select, RowMapper<T> rowMapper,
+			QueryForObjectListener<T> listener) throws DataAccessException;
+
+	/**
 	 * Executes the provided CQL Query, and maps <b>ONE</b> Row returned with the supplied RowMapper.
 	 * <p>
 	 * This expects only ONE row to be returned. More than one Row will cause an Exception to be thrown.
@@ -639,6 +704,30 @@ public interface CqlOperations {
 	<T> T queryForObject(String cql, Class<T> requiredType) throws DataAccessException;
 
 	/**
+	 * Executes the provided {@link Select} query and returns the first column of the first Row as an object of type
+	 * <code>T</code>.
+	 * 
+	 * @param select The {@link Select} query
+	 * @param requiredType Type that Cassandra data types can be converted to.
+	 * @return A {@link QueryCancellor} that can be used to cancel the query if necessary.
+	 * @throws DataAccessException
+	 */
+	<T> QueryCancellor queryForObjectAsynchronously(Select select, Class<T> requiredType,
+			QueryForObjectListener<T> listener) throws DataAccessException;
+
+	/**
+	 * Executes the provided select CQL query and returns the first column of the first Row as an object of type
+	 * <code>T</code>.
+	 * 
+	 * @param cql The select query CQL. Must not be <code>null</code> or blank.
+	 * @param requiredType The type to convert the first column of the first row to. Must not be <code>null</code>.
+	 * @return A {@link QueryCancellor} that can be used to cancel the query if necessary. Must not be <code>null</code>.
+	 * @throws DataAccessException
+	 */
+	<T> QueryCancellor queryForObjectAsynchronously(String cql, Class<T> requiredType, QueryForObjectListener<T> listener)
+			throws DataAccessException;
+
+	/**
 	 * Executes the provided Select query and tries to return the first column of the first Row as a Class<T>.
 	 * 
 	 * @param select The Select Query
@@ -681,6 +770,30 @@ public interface CqlOperations {
 	Map<String, Object> queryForMap(Select select) throws DataAccessException;
 
 	/**
+	 * Executes the provided CQL query asynchronously and maps the first row to a {@link Map}&lt;String,Object&gt;.
+	 * Additional rows are ignored.
+	 * 
+	 * @param cql The select query CQL. Must not be <code>null</code> or blank.
+	 * @param listener The {@link QueryForMapListener} that will recieve the results upon query completion. Must not be
+	 *          <code>null</code>.
+	 * @return A {@link QueryCancellor} that can be used to cancel the query if necessary. Must not be <code>null</code>.
+	 * @throws DataAccessException
+	 */
+	QueryCancellor queryForMapAsynchronously(String cql, QueryForMapListener listener) throws DataAccessException;
+
+	/**
+	 * Executes the provided {@link Select} query asynchronously and maps the first row to a {@link Map}
+	 * &lt;String,Object&gt;. Additional rows are ignored.
+	 * 
+	 * @param cql The select query CQL. Must not be <code>null</code> or blank.
+	 * @param listener The {@link QueryForMapListener} that will recieve the results upon query completion. Must not be
+	 *          <code>null</code>.
+	 * @return A {@link QueryCancellor} that can be used to cancel the query if necessary. Must not be <code>null</code>.
+	 * @throws DataAccessException
+	 */
+	QueryCancellor queryForMapAsynchronously(Select select, QueryForMapListener listener) throws DataAccessException;
+
+	/**
 	 * Process a ResultSet with <b>ONE</b> Row and convert to a Map. This is used internal to the Template for core
 	 * operations, but is made available through Operations in the event you have a ResultSet to process. The ResultsSet
 	 * could come from a ResultSetFuture after an asynchronous query.
@@ -714,6 +827,32 @@ public interface CqlOperations {
 	<T> List<T> queryForList(Select select, Class<T> elementType) throws DataAccessException;
 
 	/**
+	 * Executes the provided {@link Select} query asynchronously and returns all values in the first column of the results
+	 * as a {@link List} of the type in the second argument.
+	 * 
+	 * @param select The {@link Select} query
+	 * @param elementType The type to cast the data values to
+	 * @param listener The listener to receive the results asynchronously. Must not be <code>null</code>.
+	 * @return {@link QueryCancellor} to cancel the query if necessary
+	 * @throws DataAccessException
+	 */
+	<T> QueryCancellor queryForListAsynchronously(Select select, Class<T> elementType, QueryForListListener<T> listener)
+			throws DataAccessException;
+
+	/**
+	 * Executes the provided {@link Select} query asynchronously and returns all values in the first column of the results
+	 * as a {@link List} of the type in the second argument.
+	 * 
+	 * @param select The select query CQL
+	 * @param elementType The type to cast the data values to
+	 * @param listener The listener to receive the results asynchronously. Must not be <code>null</code>.
+	 * @return {@link QueryCancellor} to cancel the query if necessary
+	 * @throws DataAccessException
+	 */
+	<T> QueryCancellor queryForListAsynchronously(String select, Class<T> elementType, QueryForListListener<T> listener)
+			throws DataAccessException;
+
+	/**
 	 * Process a ResultSet and convert the first column of the results to a List. This is used internal to the Template
 	 * for core operations, but is made available through Operations in the event you have a ResultSet to process. The
 	 * ResultsSet could come from a ResultSetFuture after an asynchronous query.
@@ -734,6 +873,32 @@ public interface CqlOperations {
 	 * @throws DataAccessException
 	 */
 	List<Map<String, Object>> queryForListOfMap(String cql) throws DataAccessException;
+
+	/**
+	 * Executes the provided {@link Select} query and converts the results to a {@link List} of {@link Map}s. Each element
+	 * in the {@link List} represents a row returned from the query. Each row's column(s) are put into a {@link Map} as
+	 * values keyed by column name.
+	 * 
+	 * @param select The {@link Select} query. Must not be <code>null</code>.
+	 * @param listener The listener that will receive the results upon query completion. Must not be <code>null</code>.
+	 * @return A {@link QueryCancellor} that can be used to cancel the query. Must not be <code>null</code>.
+	 * @throws DataAccessException
+	 */
+	QueryCancellor queryForListOfMapAsynchronously(Select select, QueryForListListener<Map<String, Object>> listener)
+			throws DataAccessException;
+
+	/**
+	 * Executes the provided select CQL query and converts the results to a {@link List} of {@link Map}s. Each element in
+	 * the {@link List} represents a row returned from the query. Each row's column(s) are put into a {@link Map} as
+	 * values keyed by column name.
+	 * 
+	 * @param select The select query CQL. Must not be <code>null</code> or blank.
+	 * @param listener The listener that will receive the results upon query completion. Must not be <code>null</code>.
+	 * @return A {@link QueryCancellor} that can be used to cancel the query. Must not be <code>null</code>.
+	 * @throws DataAccessException
+	 */
+	QueryCancellor queryForListOfMapAsynchronously(String cql, QueryForListListener<Map<String, Object>> listener)
+			throws DataAccessException;
 
 	/**
 	 * Executes the provided Select Query and converts the results to a basic List of Maps. Each element in the List
