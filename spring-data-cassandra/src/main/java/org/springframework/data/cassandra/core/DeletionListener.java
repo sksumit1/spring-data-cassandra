@@ -4,9 +4,9 @@ import java.util.Collection;
 
 import com.datastax.driver.core.ResultSet;
 
-public interface DeletionListener {
+public interface DeletionListener<T> {
 
-	void onDeletionComplete(Collection<?> entities);
+	void onDeletionComplete(Collection<T> entities);
 
 	/**
 	 * Called if an exception is raised while getting or converting the {@link ResultSet}.

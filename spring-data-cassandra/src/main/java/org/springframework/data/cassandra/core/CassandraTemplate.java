@@ -16,6 +16,7 @@
 package org.springframework.data.cassandra.core;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -183,12 +184,12 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	}
 
 	@Override
-	public <T> Cancellable deleteAsynchronously(List<T> entities, DeletionListener listener) {
+	public <T> Cancellable deleteAsynchronously(List<T> entities, DeletionListener<T> listener) {
 		return doBatchDeleteAsync(entities, listener, null);
 	}
 
 	@Override
-	public <T> Cancellable deleteAsynchronously(List<T> entities, DeletionListener listener, QueryOptions options) {
+	public <T> Cancellable deleteAsynchronously(List<T> entities, DeletionListener<T> listener, QueryOptions options) {
 		return doBatchDeleteAsync(entities, listener, options);
 	}
 
@@ -203,12 +204,12 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	}
 
 	@Override
-	public <T> Cancellable deleteAsynchronously(T entity, DeletionListener listener) {
+	public <T> Cancellable deleteAsynchronously(T entity, DeletionListener<T> listener) {
 		return doDeleteAsync(entity, listener, null);
 	}
 
 	@Override
-	public <T> Cancellable deleteAsynchronously(T entity, DeletionListener listener, QueryOptions options) {
+	public <T> Cancellable deleteAsynchronously(T entity, DeletionListener<T> listener, QueryOptions options) {
 		return doDeleteAsync(entity, listener, options);
 	}
 
@@ -237,25 +238,42 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		return doInsert(entity, options);
 	}
 
+	/**
+	 * @deprecated See {@link CassandraTemplate#insertAsynchronously(List)}
+	 */
+	@Deprecated
 	@Override
 	public <T> List<T> insertAsynchronously(List<T> entities) {
-		insertAsynchronously(entities, null, null);
+		insertAsynchronously(entities, (WriteOptions) null);
 		return entities;
 	}
 
+	/**
+	 * @deprecated See {@link CassandraTemplate#insertAsynchronously(List, WriteOptions)}
+	 */
+	@Deprecated
 	@Override
 	public <T> List<T> insertAsynchronously(List<T> entities, WriteOptions options) {
-		insertAsynchronously(entities, null, options);
+		doInsertAsynchronously(entities, null, options);
 		return entities;
 	}
 
 	@Override
-	public <T> Cancellable insertAsynchronously(List<T> entities, WriteListener listener) {
-		return insertAsynchronously(entities, listener, null);
+	public <T> Cancellable insertAsynchronously(List<T> entities, WriteListener<T> listener) {
+		return doInsertAsynchronously(entities, listener, null);
 	}
 
 	@Override
-	public <T> Cancellable insertAsynchronously(List<T> entities, WriteListener listener, WriteOptions options) {
+	public <T> Cancellable insertAsynchronously(List<T> entities, WriteListener<T> listener, WriteOptions options) {
+		return doInsertAsynchronously(entities, listener, options);
+	}
+
+	/**
+	 * This method resolves ambiguity the compiler sees as a result of type erasure between
+	 * {@link #insertAsynchronously(Object, WriteListener, WriteOptions)} and {@link #insertAsynchronously(List<T>,
+	 * WriteListener<T>, WriteOptions)}.
+	 */
+	protected <T> Cancellable doInsertAsynchronously(List<T> entities, WriteListener<T> listener, WriteOptions options) {
 		return doBatchInsertAsync(entities, listener, options);
 	}
 
@@ -280,12 +298,12 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	}
 
 	@Override
-	public <T> Cancellable insertAsynchronously(T entity, WriteListener listener) {
+	public <T> Cancellable insertAsynchronously(T entity, WriteListener<T> listener) {
 		return insertAsynchronously(entity, listener, null);
 	}
 
 	@Override
-	public <T> Cancellable insertAsynchronously(T entity, WriteListener listener, WriteOptions options) {
+	public <T> Cancellable insertAsynchronously(T entity, WriteListener<T> listener, WriteOptions options) {
 		return doInsertAsync(entity, listener, options);
 	}
 
@@ -446,23 +464,32 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 
 	@Override
 	public <T> List<T> updateAsynchronously(List<T> entities) {
-		updateAsynchronously(entities, null, null);
+		doUpdateAsynchronously(entities, null, null);
 		return entities;
 	}
 
 	@Override
 	public <T> List<T> updateAsynchronously(List<T> entities, WriteOptions options) {
-		updateAsynchronously(entities, null, options);
+		doUpdateAsynchronously(entities, null, options);
 		return entities;
 	}
 
 	@Override
-	public <T> Cancellable updateAsynchronously(List<T> entities, WriteListener listener) {
-		return updateAsynchronously(entities, listener, null);
+	public <T> Cancellable updateAsynchronously(List<T> entities, WriteListener<T> listener) {
+		return doUpdateAsynchronously(entities, listener, null);
 	}
 
 	@Override
-	public <T> Cancellable updateAsynchronously(List<T> entities, WriteListener listener, WriteOptions options) {
+	public <T> Cancellable updateAsynchronously(List<T> entities, WriteListener<T> listener, WriteOptions options) {
+		return doUpdateAsynchronously(entities, listener, options);
+	}
+
+	/**
+	 * This method resolves ambiguity the compiler sees as a result of type erasure between
+	 * {@link #updateAsynchronously(Object, WriteListener, WriteOptions)} and {@link #updateAsynchronously(List<T>,
+	 * WriteListener<T>, WriteOptions)}.
+	 */
+	protected <T> Cancellable doUpdateAsynchronously(List<T> entities, WriteListener<T> listener, WriteOptions options) {
 		return doBatchUpdateAsync(entities, listener, options);
 	}
 
@@ -479,12 +506,12 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	}
 
 	@Override
-	public <T> Cancellable updateAsynchronously(T entity, WriteListener listener) {
+	public <T> Cancellable updateAsynchronously(T entity, WriteListener<T> listener) {
 		return updateAsynchronously(entity, listener, null);
 	}
 
 	@Override
-	public <T> Cancellable updateAsynchronously(T entity, WriteListener listener, WriteOptions options) {
+	public <T> Cancellable updateAsynchronously(T entity, WriteListener<T> listener, WriteOptions options) {
 		return doUpdateAsync(entity, listener, options);
 	}
 
@@ -597,7 +624,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 					rsf.getUninterruptibly();
 					listener.onDeletionComplete(entities);
 				} catch (Exception e) {
-					listener.onException(e);
+					listener.onException(translateExceptionIfPossible(e));
 				}
 			}
 		};
@@ -615,7 +642,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		return entity;
 	}
 
-	protected <T> Cancellable doInsertAsync(final T entity, final WriteListener listener, WriteOptions options) {
+	protected <T> Cancellable doInsertAsync(final T entity, final WriteListener<T> listener, WriteOptions options) {
 
 		Assert.notNull(entity);
 
@@ -623,9 +650,15 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 
 		AsynchronousQueryListener aql = listener == null ? null : new AsynchronousQueryListener() {
 
+			@SuppressWarnings("unchecked")
 			@Override
 			public void onQueryComplete(ResultSetFuture rsf) {
-				listener.onWriteComplete(CollectionUtils.toList(entity));
+				try {
+					rsf.getUninterruptibly();
+					listener.onWriteComplete((Collection<T>) CollectionUtils.toList(entity));
+				} catch (Exception x) {
+					listener.onException(translateExceptionIfPossible(x));
+				}
 			}
 		};
 
@@ -666,7 +699,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	 * @param options The {@link WriteOptions} to use. May be <code>null</code>.
 	 * @return A {@link Cancellable} that can be used to cancel the query if necessary.
 	 */
-	protected <T> Cancellable doBatchInsertAsync(final List<T> entities, final WriteListener listener,
+	protected <T> Cancellable doBatchInsertAsync(final List<T> entities, final WriteListener<T> listener,
 			WriteOptions options) {
 		return doBatchWriteAsync(entities, listener, options, true);
 	}
@@ -680,7 +713,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	 * @param options The {@link WriteOptions} to use. May be <code>null</code>.
 	 * @return A {@link Cancellable} that can be used to cancel the query if necessary.
 	 */
-	protected <T> Cancellable doBatchUpdateAsync(final List<T> entities, final WriteListener listener,
+	protected <T> Cancellable doBatchUpdateAsync(final List<T> entities, final WriteListener<T> listener,
 			WriteOptions options) {
 		return doBatchWriteAsync(entities, listener, options, false);
 	}
@@ -695,7 +728,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	 * @param insert If <code>true</code>, then an insert is performed, else an update is performed.
 	 * @return A {@link Cancellable} that can be used to cancel the query if necessary.
 	 */
-	protected <T> Cancellable doBatchWriteAsync(final List<T> entities, final WriteListener listener,
+	protected <T> Cancellable doBatchWriteAsync(final List<T> entities, final WriteListener<T> listener,
 			WriteOptions options, boolean insert) {
 
 		if (entities == null || entities.size() == 0) {
@@ -725,7 +758,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 					rsf.getUninterruptibly();
 					listener.onWriteComplete(entities);
 				} catch (Exception e) {
-					listener.onException(e);
+					listener.onException(translateExceptionIfPossible(e));
 				}
 			}
 		};
@@ -749,7 +782,12 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		AsynchronousQueryListener aql = listener == null ? null : new AsynchronousQueryListener() {
 			@Override
 			public void onQueryComplete(ResultSetFuture rsf) {
-				listener.onDeletionComplete(CollectionUtils.toList(entity));
+				try {
+					rsf.getUninterruptibly();
+					listener.onDeletionComplete(CollectionUtils.toList(entity));
+				} catch (Exception x) {
+					listener.onException(translateExceptionIfPossible(x));
+				}
 			}
 		};
 
@@ -764,7 +802,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		return entity;
 	}
 
-	protected <T> Cancellable doUpdateAsync(final T entity, final WriteListener listener, WriteOptions options) {
+	protected <T> Cancellable doUpdateAsync(final T entity, final WriteListener<T> listener, WriteOptions options) {
 
 		Assert.notNull(entity);
 
@@ -772,9 +810,15 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 
 		AsynchronousQueryListener aql = listener == null ? null : new AsynchronousQueryListener() {
 
+			@SuppressWarnings("unchecked")
 			@Override
 			public void onQueryComplete(ResultSetFuture rsf) {
-				listener.onWriteComplete(CollectionUtils.toList(entity));
+				try {
+					rsf.getUninterruptibly();
+					listener.onWriteComplete((Collection<T>) CollectionUtils.toList(entity));
+				} catch (Exception x) {
+					listener.onException(translateExceptionIfPossible(x));
+				}
 			}
 		};
 
@@ -980,7 +1024,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 						listener.onQueryComplete(result);
 					}
 				} catch (Exception e) {
-					listener.onException(e);
+					listener.onException(translateExceptionIfPossible(e));
 				}
 			}
 		};

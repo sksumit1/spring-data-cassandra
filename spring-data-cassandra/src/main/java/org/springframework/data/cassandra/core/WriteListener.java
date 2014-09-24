@@ -24,14 +24,14 @@ import com.datastax.driver.core.ResultSet;
  * 
  * @author Matthew T. Adams
  */
-public interface WriteListener {
+public interface WriteListener<T> {
 
 	/**
 	 * Called upon completion of the asynchronous insert or update.
 	 * 
 	 * @param entities The entities inserted or updated.
 	 */
-	void onWriteComplete(Collection<?> entities);
+	void onWriteComplete(Collection<T> entities);
 
 	/**
 	 * Called if an exception is raised while getting or converting the {@link ResultSet}.

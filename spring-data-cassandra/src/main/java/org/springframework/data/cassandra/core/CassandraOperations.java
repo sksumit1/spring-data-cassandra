@@ -192,7 +192,7 @@ public interface CassandraOperations extends CqlOperations {
 	 * @param listener The listener to receive notification of completion
 	 * @return A {@link Cancellable} enabling the cancellation of the operation
 	 */
-	<T> Cancellable insertAsynchronously(T entity, WriteListener listener);
+	<T> Cancellable insertAsynchronously(T entity, WriteListener<T> listener);
 
 	/**
 	 * Inserts the given entity asynchronously.
@@ -202,7 +202,7 @@ public interface CassandraOperations extends CqlOperations {
 	 * @param options The {@link WriteOptions} to use
 	 * @return A {@link Cancellable} enabling the cancellation of the operation
 	 */
-	<T> Cancellable insertAsynchronously(T entity, WriteListener listener, WriteOptions options);
+	<T> Cancellable insertAsynchronously(T entity, WriteListener<T> listener, WriteOptions options);
 
 	/**
 	 * Inserts the given entities asynchronously in a batch.
@@ -235,7 +235,7 @@ public interface CassandraOperations extends CqlOperations {
 	 * @param listener The listener to receive notification of completion
 	 * @return A {@link Cancellable} enabling the cancellation of the operation
 	 */
-	<T> Cancellable insertAsynchronously(List<T> entities, WriteListener listener);
+	<T> Cancellable insertAsynchronously(List<T> entities, WriteListener<T> listener);
 
 	/**
 	 * Inserts the given entities asynchronously in a batch.
@@ -245,7 +245,7 @@ public interface CassandraOperations extends CqlOperations {
 	 * @param options The {@link WriteOptions} to use
 	 * @return A {@link Cancellable} enabling the cancellation of the operation
 	 */
-	<T> Cancellable insertAsynchronously(List<T> entities, WriteListener listener, WriteOptions options);
+	<T> Cancellable insertAsynchronously(List<T> entities, WriteListener<T> listener, WriteOptions options);
 
 	/**
 	 * Update the given entity.
@@ -312,7 +312,7 @@ public interface CassandraOperations extends CqlOperations {
 	 * @param listener The listener to receive notification of completion
 	 * @return A {@link Cancellable} enabling the cancellation of the operation
 	 */
-	<T> Cancellable updateAsynchronously(T entity, WriteListener listener);
+	<T> Cancellable updateAsynchronously(T entity, WriteListener<T> listener);
 
 	/**
 	 * Updates the given entity asynchronously.
@@ -322,7 +322,7 @@ public interface CassandraOperations extends CqlOperations {
 	 * @param options The {@link WriteOptions} to use
 	 * @return A {@link Cancellable} enabling the cancellation of the operation
 	 */
-	<T> Cancellable updateAsynchronously(T entity, WriteListener listener, WriteOptions options);
+	<T> Cancellable updateAsynchronously(T entity, WriteListener<T> listener, WriteOptions options);
 
 	/**
 	 * Updates the given entities asynchronously in a batch.
@@ -355,7 +355,7 @@ public interface CassandraOperations extends CqlOperations {
 	 * @param listener The listener to receive notification of completion
 	 * @return A {@link Cancellable} enabling the cancellation of the operation
 	 */
-	<T> Cancellable updateAsynchronously(List<T> entities, WriteListener listener);
+	<T> Cancellable updateAsynchronously(List<T> entities, WriteListener<T> listener);
 
 	/**
 	 * Updates the given entities asynchronously in a batch.
@@ -365,7 +365,7 @@ public interface CassandraOperations extends CqlOperations {
 	 * @param options The {@link WriteOptions} to use
 	 * @return A {@link Cancellable} enabling the cancellation of the operation
 	 */
-	<T> Cancellable updateAsynchronously(List<T> entities, WriteListener listener, WriteOptions options);
+	<T> Cancellable updateAsynchronously(List<T> entities, WriteListener<T> listener, WriteOptions options);
 
 	/**
 	 * Remove the given object from the table by id.
@@ -416,7 +416,7 @@ public interface CassandraOperations extends CqlOperations {
 	 * @param entity The object to delete
 	 * @param listener The {@link DeletionListener} to receive notification upon completion
 	 */
-	<T> Cancellable deleteAsynchronously(T entity, DeletionListener listener);
+	<T> Cancellable deleteAsynchronously(T entity, DeletionListener<T> listener);
 
 	/**
 	 * Remove the given object from the table by id.
@@ -425,7 +425,7 @@ public interface CassandraOperations extends CqlOperations {
 	 * @param listener The {@link DeletionListener} to receive notification upon completion
 	 * @param options The {@link QueryOptions} to use
 	 */
-	<T> Cancellable deleteAsynchronously(T entity, DeletionListener listener, QueryOptions options);
+	<T> Cancellable deleteAsynchronously(T entity, DeletionListener<T> listener, QueryOptions options);
 
 	/**
 	 * Remove the given objects from the table by id.
@@ -440,7 +440,7 @@ public interface CassandraOperations extends CqlOperations {
 	 * @param entities The objects to delete
 	 * @param listener The {@link DeletionListener} to receive notification upon completion
 	 */
-	<T> Cancellable deleteAsynchronously(List<T> entities, DeletionListener listener);
+	<T> Cancellable deleteAsynchronously(List<T> entities, DeletionListener<T> listener);
 
 	/**
 	 * Remove the given objects from the table by id.
@@ -457,7 +457,7 @@ public interface CassandraOperations extends CqlOperations {
 	 * @param listener The {@link DeletionListener} to receive notification upon completion
 	 * @param options The {@link QueryOptions} to use
 	 */
-	<T> Cancellable deleteAsynchronously(List<T> entities, DeletionListener listener, QueryOptions options);
+	<T> Cancellable deleteAsynchronously(List<T> entities, DeletionListener<T> listener, QueryOptions options);
 
 	/**
 	 * Returns the underlying {@link CassandraConverter}.
