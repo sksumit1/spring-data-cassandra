@@ -18,20 +18,20 @@ package org.springframework.cassandra.core;
 import com.datastax.driver.core.ResultSetFuture;
 
 /**
- * Convenient default implementation of a {@link QueryCancellor}.
+ * Convenient default implementation of a {@link Cancellable}.
  * 
  * @author Matthew T. Adams
  */
-public class BasicQueryCancellor implements QueryCancellor {
+public class ResultSetFutureCancellable implements Cancellable {
 
 	ResultSetFuture rsf;
 
-	public BasicQueryCancellor(ResultSetFuture rsf) {
+	public ResultSetFutureCancellable(ResultSetFuture rsf) {
 		this.rsf = rsf;
 	}
 
 	@Override
-	public void cancelQuery() {
+	public void cancel() {
 		rsf.cancel(true);
 	}
 }

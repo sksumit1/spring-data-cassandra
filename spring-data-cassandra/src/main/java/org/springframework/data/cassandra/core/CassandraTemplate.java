@@ -21,8 +21,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.cassandra.core.AsynchronousQueryListener;
+import org.springframework.cassandra.core.CqlOperations;
 import org.springframework.cassandra.core.CqlTemplate;
-import org.springframework.cassandra.core.QueryCancellor;
+import org.springframework.cassandra.core.Cancellable;
 import org.springframework.cassandra.core.QueryForObjectListener;
 import org.springframework.cassandra.core.QueryOptions;
 import org.springframework.cassandra.core.SessionCallback;
@@ -172,42 +173,42 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	}
 
 	@Override
-	public <T> QueryCancellor deleteAsynchronously(List<T> entities) {
+	public <T> Cancellable deleteAsynchronously(List<T> entities) {
 		return doBatchDeleteAsync(entities, null, null);
 	}
 
 	@Override
-	public <T> QueryCancellor deleteAsynchronously(List<T> entities, QueryOptions options) {
+	public <T> Cancellable deleteAsynchronously(List<T> entities, QueryOptions options) {
 		return doBatchDeleteAsync(entities, null, options);
 	}
 
 	@Override
-	public <T> QueryCancellor deleteAsynchronously(List<T> entities, DeletionListener listener) {
+	public <T> Cancellable deleteAsynchronously(List<T> entities, DeletionListener listener) {
 		return doBatchDeleteAsync(entities, listener, null);
 	}
 
 	@Override
-	public <T> QueryCancellor deleteAsynchronously(List<T> entities, DeletionListener listener, QueryOptions options) {
+	public <T> Cancellable deleteAsynchronously(List<T> entities, DeletionListener listener, QueryOptions options) {
 		return doBatchDeleteAsync(entities, listener, options);
 	}
 
 	@Override
-	public <T> QueryCancellor deleteAsynchronously(T entity) {
+	public <T> Cancellable deleteAsynchronously(T entity) {
 		return doDeleteAsync(entity, null, null);
 	}
 
 	@Override
-	public <T> QueryCancellor deleteAsynchronously(T entity, QueryOptions options) {
+	public <T> Cancellable deleteAsynchronously(T entity, QueryOptions options) {
 		return doDeleteAsync(entity, null, options);
 	}
 
 	@Override
-	public <T> QueryCancellor deleteAsynchronously(T entity, DeletionListener listener) {
+	public <T> Cancellable deleteAsynchronously(T entity, DeletionListener listener) {
 		return doDeleteAsync(entity, listener, null);
 	}
 
 	@Override
-	public <T> QueryCancellor deleteAsynchronously(T entity, DeletionListener listener, QueryOptions options) {
+	public <T> Cancellable deleteAsynchronously(T entity, DeletionListener listener, QueryOptions options) {
 		return doDeleteAsync(entity, listener, options);
 	}
 
@@ -249,21 +250,29 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	}
 
 	@Override
-	public <T> QueryCancellor insertAsynchronously(List<T> entities, WriteListener listener) {
+	public <T> Cancellable insertAsynchronously(List<T> entities, WriteListener listener) {
 		return insertAsynchronously(entities, listener, null);
 	}
 
 	@Override
-	public <T> QueryCancellor insertAsynchronously(List<T> entities, WriteListener listener, WriteOptions options) {
+	public <T> Cancellable insertAsynchronously(List<T> entities, WriteListener listener, WriteOptions options) {
 		return doBatchInsertAsync(entities, listener, options);
 	}
 
+	/**
+	 * @deprecated See {@link CqlOperations#insert(Object)}
+	 */
+	@Deprecated
 	@Override
 	public <T> T insertAsynchronously(T entity) {
 		insertAsynchronously(entity, null, null);
 		return entity;
 	}
 
+	/**
+	 * @deprecated See {@link CqlOperations#insert(Object,WriteOptions)}
+	 */
+	@Deprecated
 	@Override
 	public <T> T insertAsynchronously(T entity, WriteOptions options) {
 		insertAsynchronously(entity, null, options);
@@ -271,12 +280,12 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	}
 
 	@Override
-	public <T> QueryCancellor insertAsynchronously(T entity, WriteListener listener) {
+	public <T> Cancellable insertAsynchronously(T entity, WriteListener listener) {
 		return insertAsynchronously(entity, listener, null);
 	}
 
 	@Override
-	public <T> QueryCancellor insertAsynchronously(T entity, WriteListener listener, WriteOptions options) {
+	public <T> Cancellable insertAsynchronously(T entity, WriteListener listener, WriteOptions options) {
 		return doInsertAsync(entity, listener, options);
 	}
 
@@ -448,12 +457,12 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	}
 
 	@Override
-	public <T> QueryCancellor updateAsynchronously(List<T> entities, WriteListener listener) {
+	public <T> Cancellable updateAsynchronously(List<T> entities, WriteListener listener) {
 		return updateAsynchronously(entities, listener, null);
 	}
 
 	@Override
-	public <T> QueryCancellor updateAsynchronously(List<T> entities, WriteListener listener, WriteOptions options) {
+	public <T> Cancellable updateAsynchronously(List<T> entities, WriteListener listener, WriteOptions options) {
 		return doBatchUpdateAsync(entities, listener, options);
 	}
 
@@ -470,12 +479,12 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	}
 
 	@Override
-	public <T> QueryCancellor updateAsynchronously(T entity, WriteListener listener) {
+	public <T> Cancellable updateAsynchronously(T entity, WriteListener listener) {
 		return updateAsynchronously(entity, listener, null);
 	}
 
 	@Override
-	public <T> QueryCancellor updateAsynchronously(T entity, WriteListener listener, WriteOptions options) {
+	public <T> Cancellable updateAsynchronously(T entity, WriteListener listener, WriteOptions options) {
 		return doUpdateAsync(entity, listener, options);
 	}
 
@@ -577,7 +586,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 				cassandraConverter));
 	}
 
-	protected <T> QueryCancellor doBatchDeleteAsync(final List<T> entities, final DeletionListener listener,
+	protected <T> Cancellable doBatchDeleteAsync(final List<T> entities, final DeletionListener listener,
 			QueryOptions options) {
 
 		AsynchronousQueryListener aql = listener == null ? null : new AsynchronousQueryListener() {
@@ -606,7 +615,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		return entity;
 	}
 
-	protected <T> QueryCancellor doInsertAsync(final T entity, final WriteListener listener, WriteOptions options) {
+	protected <T> Cancellable doInsertAsync(final T entity, final WriteListener listener, WriteOptions options) {
 
 		Assert.notNull(entity);
 
@@ -655,9 +664,9 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	 * @param listener The listener that will receive notification of the completion of the batch insert or update. May be
 	 *          <code>null</code>.
 	 * @param options The {@link WriteOptions} to use. May be <code>null</code>.
-	 * @return A {@link QueryCancellor} that can be used to cancel the query if necessary.
+	 * @return A {@link Cancellable} that can be used to cancel the query if necessary.
 	 */
-	protected <T> QueryCancellor doBatchInsertAsync(final List<T> entities, final WriteListener listener,
+	protected <T> Cancellable doBatchInsertAsync(final List<T> entities, final WriteListener listener,
 			WriteOptions options) {
 		return doBatchWriteAsync(entities, listener, options, true);
 	}
@@ -669,9 +678,9 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	 * @param listener The listener that will receive notification of the completion of the batch insert or update. May be
 	 *          <code>null</code>.
 	 * @param options The {@link WriteOptions} to use. May be <code>null</code>.
-	 * @return A {@link QueryCancellor} that can be used to cancel the query if necessary.
+	 * @return A {@link Cancellable} that can be used to cancel the query if necessary.
 	 */
-	protected <T> QueryCancellor doBatchUpdateAsync(final List<T> entities, final WriteListener listener,
+	protected <T> Cancellable doBatchUpdateAsync(final List<T> entities, final WriteListener listener,
 			WriteOptions options) {
 		return doBatchWriteAsync(entities, listener, options, false);
 	}
@@ -684,19 +693,19 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	 *          <code>null</code>.
 	 * @param options The {@link WriteOptions} to use. May be <code>null</code>.
 	 * @param insert If <code>true</code>, then an insert is performed, else an update is performed.
-	 * @return A {@link QueryCancellor} that can be used to cancel the query if necessary.
+	 * @return A {@link Cancellable} that can be used to cancel the query if necessary.
 	 */
-	protected <T> QueryCancellor doBatchWriteAsync(final List<T> entities, final WriteListener listener,
+	protected <T> Cancellable doBatchWriteAsync(final List<T> entities, final WriteListener listener,
 			WriteOptions options, boolean insert) {
 
 		if (entities == null || entities.size() == 0) {
 			if (logger.isWarnEnabled()) {
 				logger.warn("no-op due to given null or empty list");
 			}
-			return new QueryCancellor() {
+			return new Cancellable() {
 
 				@Override
-				public void cancelQuery() {
+				public void cancel() {
 					if (logger.isWarnEnabled()) {
 						logger.warn("no-op query cancellation due to given null or empty list");
 					}
@@ -731,7 +740,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		execute(delete);
 	}
 
-	protected <T> QueryCancellor doDeleteAsync(final T entity, final DeletionListener listener, QueryOptions options) {
+	protected <T> Cancellable doDeleteAsync(final T entity, final DeletionListener listener, QueryOptions options) {
 
 		Assert.notNull(entity);
 
@@ -755,7 +764,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		return entity;
 	}
 
-	protected <T> QueryCancellor doUpdateAsync(final T entity, final WriteListener listener, WriteOptions options) {
+	protected <T> Cancellable doUpdateAsync(final T entity, final WriteListener listener, WriteOptions options) {
 
 		Assert.notNull(entity);
 
@@ -931,28 +940,28 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	}
 
 	@Override
-	public <T> QueryCancellor selectOneAsynchronously(Select select, Class<T> type, QueryForObjectListener<T> listener) {
+	public <T> Cancellable selectOneAsynchronously(Select select, Class<T> type, QueryForObjectListener<T> listener) {
 		return selectOneAsynchronously(select, type, listener, null);
 	}
 
 	@Override
-	public <T> QueryCancellor selectOneAsynchronously(String cql, Class<T> type, QueryForObjectListener<T> listener) {
+	public <T> Cancellable selectOneAsynchronously(String cql, Class<T> type, QueryForObjectListener<T> listener) {
 		return selectOneAsynchronously(cql, type, listener, null);
 	}
 
 	@Override
-	public <T> QueryCancellor selectOneAsynchronously(Select select, Class<T> type, QueryForObjectListener<T> listener,
+	public <T> Cancellable selectOneAsynchronously(Select select, Class<T> type, QueryForObjectListener<T> listener,
 			QueryOptions options) {
 		return doSelectOneAsync(select, type, listener, options);
 	}
 
 	@Override
-	public <T> QueryCancellor selectOneAsynchronously(String cql, Class<T> type, QueryForObjectListener<T> listener,
+	public <T> Cancellable selectOneAsynchronously(String cql, Class<T> type, QueryForObjectListener<T> listener,
 			QueryOptions options) {
 		return doSelectOneAsync(cql, type, listener, options);
 	}
 
-	protected <T> QueryCancellor doSelectOneAsync(final Object query, final Class<T> type,
+	protected <T> Cancellable doSelectOneAsync(final Object query, final Class<T> type,
 			final QueryForObjectListener<T> listener, QueryOptions options) {
 
 		AsynchronousQueryListener aql = new AsynchronousQueryListener() {

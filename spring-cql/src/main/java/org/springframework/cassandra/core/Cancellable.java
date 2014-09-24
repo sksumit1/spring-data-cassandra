@@ -15,18 +15,15 @@
  */
 package org.springframework.cassandra.core;
 
-import com.datastax.driver.core.ResultSetFuture;
-
 /**
  * Interface allowing a caller to cancel an asynchronous query.
  * 
  * @author Matthew T. Adams
  */
-public interface QueryCancellor {
+public interface Cancellable {
 
 	/**
-	 * Cancels the query operation that this cancellor came from. Usually delegates to
-	 * {@link ResultSetFuture#cancel(boolean)}.
+	 * Cancels the query operation that this cancellable came from.
 	 */
-	void cancelQuery();
+	void cancel();
 }

@@ -17,7 +17,6 @@ package org.springframework.cassandra.core;
 
 /**
  * @author David Webb
- * 
  */
 public class WriteOptions extends QueryOptions {
 

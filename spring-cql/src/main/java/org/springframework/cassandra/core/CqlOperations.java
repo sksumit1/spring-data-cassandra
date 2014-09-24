@@ -170,10 +170,10 @@ public interface CqlOperations {
 	 * 
 	 * @param cql The CQL String to execute
 	 * @param listener The {@link Runnable} to register with the {@link ResultSetFuture}
-	 * @return A {@link QueryCancellor} that can be used to cancel the query.
+	 * @return A {@link Cancellable} that can be used to cancel the query.
 	 * @see queryAsyncronously for Reads
 	 */
-	QueryCancellor executeAsynchronously(String cql, Runnable listener) throws DataAccessException;
+	Cancellable executeAsynchronously(String cql, Runnable listener) throws DataAccessException;
 
 	/**
 	 * Executes the supplied Query Asynchronously and returns nothing.
@@ -181,20 +181,20 @@ public interface CqlOperations {
 	 * @param cql The CQL String to execute
 	 * @param listener The {@link Runnable} to register with the {@link ResultSetFuture}
 	 * @param executor The {@link Executor} to regsiter with the {@link ResultSetFuture}
-	 * @return A {@link QueryCancellor} that can be used to cancel the query.
+	 * @return A {@link Cancellable} that can be used to cancel the query.
 	 * @see queryAsyncronously for Reads
 	 */
-	QueryCancellor executeAsynchronously(String cql, Runnable listener, Executor executor) throws DataAccessException;
+	Cancellable executeAsynchronously(String cql, Runnable listener, Executor executor) throws DataAccessException;
 
 	/**
 	 * Executes the supplied Query Asynchronously and returns nothing.
 	 * 
 	 * @param cql The CQL String to execute
 	 * @param listener The {@link AsynchronousQueryListener} to register with the {@link ResultSetFuture}
-	 * @return A {@link QueryCancellor} that can be used to cancel the query.
+	 * @return A {@link Cancellable} that can be used to cancel the query.
 	 * @see queryAsyncronously for Reads
 	 */
-	QueryCancellor executeAsynchronously(String cql, AsynchronousQueryListener listener) throws DataAccessException;
+	Cancellable executeAsynchronously(String cql, AsynchronousQueryListener listener) throws DataAccessException;
 
 	/**
 	 * Executes the supplied Query Asynchronously and returns nothing.
@@ -202,10 +202,10 @@ public interface CqlOperations {
 	 * @param cql The CQL String to execute
 	 * @param listener The {@link AsynchronousQueryListener} to register with the {@link ResultSetFuture}
 	 * @param executor The {@link Executor} to regsiter with the {@link ResultSetFuture}
-	 * @return A {@link QueryCancellor} that can be used to cancel the query.
+	 * @return A {@link Cancellable} that can be used to cancel the query.
 	 * @see queryAsyncronously for Reads
 	 */
-	QueryCancellor executeAsynchronously(String cql, AsynchronousQueryListener listener, Executor executor)
+	Cancellable executeAsynchronously(String cql, AsynchronousQueryListener listener, Executor executor)
 			throws DataAccessException;
 
 	/**
@@ -248,16 +248,15 @@ public interface CqlOperations {
 	 */
 	ResultSetFuture executeAsynchronously(Batch batch) throws DataAccessException;
 
-	QueryCancellor executeAsynchronously(Truncate truncate, AsynchronousQueryListener listener)
-			throws DataAccessException;
+	Cancellable executeAsynchronously(Truncate truncate, AsynchronousQueryListener listener) throws DataAccessException;
 
-	QueryCancellor executeAsynchronously(Delete delete, AsynchronousQueryListener listener) throws DataAccessException;
+	Cancellable executeAsynchronously(Delete delete, AsynchronousQueryListener listener) throws DataAccessException;
 
-	QueryCancellor executeAsynchronously(Insert insert, AsynchronousQueryListener listener) throws DataAccessException;
+	Cancellable executeAsynchronously(Insert insert, AsynchronousQueryListener listener) throws DataAccessException;
 
-	QueryCancellor executeAsynchronously(Update update, AsynchronousQueryListener listener) throws DataAccessException;
+	Cancellable executeAsynchronously(Update update, AsynchronousQueryListener listener) throws DataAccessException;
 
-	QueryCancellor executeAsynchronously(Batch batch, AsynchronousQueryListener listener) throws DataAccessException;
+	Cancellable executeAsynchronously(Batch batch, AsynchronousQueryListener listener) throws DataAccessException;
 
 	/**
 	 * Executes the supplied CQL Query Asynchronously and returns nothing.
@@ -271,34 +270,33 @@ public interface CqlOperations {
 	 * Executes the supplied CQL Query Asynchronously and returns nothing.
 	 * 
 	 * @param query The {@link Statement} to execute
-	 * @return A {@link QueryCancellor} that can be used to cancel the query.
+	 * @return A {@link Cancellable} that can be used to cancel the query.
 	 */
-	QueryCancellor executeAsynchronously(Statement query, Runnable runnable) throws DataAccessException;
+	Cancellable executeAsynchronously(Statement query, Runnable runnable) throws DataAccessException;
 
 	/**
 	 * Executes the supplied CQL Query Asynchronously and returns nothing.
 	 * 
 	 * @param query The {@link Statement} to execute
-	 * @return A {@link QueryCancellor} that can be used to cancel the query.
+	 * @return A {@link Cancellable} that can be used to cancel the query.
 	 */
-	QueryCancellor executeAsynchronously(Statement query, AsynchronousQueryListener listener) throws DataAccessException;
+	Cancellable executeAsynchronously(Statement query, AsynchronousQueryListener listener) throws DataAccessException;
 
 	/**
 	 * Executes the supplied CQL Query Asynchronously and returns nothing.
 	 * 
 	 * @param query The {@link Statement} to execute
-	 * @return A {@link QueryCancellor} that can be used to cancel the query.
+	 * @return A {@link Cancellable} that can be used to cancel the query.
 	 */
-	QueryCancellor executeAsynchronously(Statement query, Runnable runnable, Executor executor)
-			throws DataAccessException;
+	Cancellable executeAsynchronously(Statement query, Runnable runnable, Executor executor) throws DataAccessException;
 
 	/**
 	 * Executes the supplied CQL Query Asynchronously and returns nothing.
 	 * 
 	 * @param query The {@link Statement} to execute
-	 * @return A {@link QueryCancellor} that can be used to cancel the query.
+	 * @return A {@link Cancellable} that can be used to cancel the query.
 	 */
-	QueryCancellor executeAsynchronously(Statement query, AsynchronousQueryListener listener, Executor executor)
+	Cancellable executeAsynchronously(Statement query, AsynchronousQueryListener listener, Executor executor)
 			throws DataAccessException;
 
 	/**
@@ -358,10 +356,10 @@ public interface CqlOperations {
 	 * 
 	 * @param cql The Query
 	 * @param listener {@link Runnable} listener for handling the query in a separate thread
-	 * @return A {@link QueryCancellor} that can be used to cancel the query.
+	 * @return A {@link Cancellable} that can be used to cancel the query.
 	 * @see #queryAsynchronously(String, AsynchronousQueryListener)
 	 */
-	QueryCancellor queryAsynchronously(String cql, Runnable listener);
+	Cancellable queryAsynchronously(String cql, Runnable listener);
 
 	/**
 	 * Executes the provided CQL Select with the provided {@link Runnable}, which is started after the query has
@@ -372,10 +370,10 @@ public interface CqlOperations {
 	 * 
 	 * @param select The Select Query
 	 * @param listener {@link Runnable} listener for handling the query in a separate thread
-	 * @return A {@link QueryCancellor} that can be used to cancel the query.
+	 * @return A {@link Cancellable} that can be used to cancel the query.
 	 * @see #queryAsynchronously(Select, AsynchronousQueryListener)
 	 */
-	QueryCancellor queryAsynchronously(Select select, Runnable listener);
+	Cancellable queryAsynchronously(Select select, Runnable listener);
 
 	/**
 	 * Executes the provided CQL Query with the provided listener. This is preferred over the same method that takes a
@@ -385,9 +383,9 @@ public interface CqlOperations {
 	 * @param cql The Query
 	 * @param listener {@link AsynchronousQueryListener} for handling the query's {@link ResultSetFuture} in a separate
 	 *          thread
-	 * @return A {@link QueryCancellor} that can be used to cancel the query.
+	 * @return A {@link Cancellable} that can be used to cancel the query.
 	 */
-	QueryCancellor queryAsynchronously(String cql, AsynchronousQueryListener listener);
+	Cancellable queryAsynchronously(String cql, AsynchronousQueryListener listener);
 
 	/**
 	 * Executes the provided CQL Select with the provided listener. This is preferred over the same method that takes a
@@ -397,9 +395,9 @@ public interface CqlOperations {
 	 * @param select The Select
 	 * @param listener {@link AsynchronousQueryListener} for handling the query's {@link ResultSetFuture} in a separate
 	 *          thread
-	 * @return A {@link QueryCancellor} that can be used to cancel the query.
+	 * @return A {@link Cancellable} that can be used to cancel the query.
 	 */
-	QueryCancellor queryAsynchronously(Select select, AsynchronousQueryListener listener);
+	Cancellable queryAsynchronously(Select select, AsynchronousQueryListener listener);
 
 	/**
 	 * Executes the provided CQL Query with the Runnable implementations using the Query Options.
@@ -407,9 +405,9 @@ public interface CqlOperations {
 	 * @param cql The Query
 	 * @param options Query Option
 	 * @param listener Runnable Listener for handling the query in a separate thread
-	 * @return A {@link QueryCancellor} that can be used to cancel the query.
+	 * @return A {@link Cancellable} that can be used to cancel the query.
 	 */
-	QueryCancellor queryAsynchronously(String cql, Runnable listener, QueryOptions options);
+	Cancellable queryAsynchronously(String cql, Runnable listener, QueryOptions options);
 
 	/**
 	 * Executes the provided CQL Query with the provided Listener and Query Options. This is preferred over the same
@@ -419,9 +417,9 @@ public interface CqlOperations {
 	 * @param cql The Query
 	 * @param options Query Option
 	 * @param listener Runnable Listener for handling the query in a separate thread
-	 * @return A {@link QueryCancellor} that can be used to cancel the query.
+	 * @return A {@link Cancellable} that can be used to cancel the query.
 	 */
-	QueryCancellor queryAsynchronously(String cql, AsynchronousQueryListener listener, QueryOptions options);
+	Cancellable queryAsynchronously(String cql, AsynchronousQueryListener listener, QueryOptions options);
 
 	/**
 	 * Executes the provided CQL Query with the provided Executor and Runnable implementations.
@@ -429,9 +427,9 @@ public interface CqlOperations {
 	 * @param cql The Query
 	 * @param listener Runnable Listener for handling the query in a separate thread
 	 * @param executor To execute the Runnable Listener
-	 * @return A {@link QueryCancellor} that can be used to cancel the query.
+	 * @return A {@link Cancellable} that can be used to cancel the query.
 	 */
-	QueryCancellor queryAsynchronously(String cql, Runnable listener, Executor executor);
+	Cancellable queryAsynchronously(String cql, Runnable listener, Executor executor);
 
 	/**
 	 * Executes the provided CQL Select with the provided Executor and Runnable implementations.
@@ -439,9 +437,9 @@ public interface CqlOperations {
 	 * @param select The Select Query
 	 * @param listener Runnable Listener for handling the query in a separate thread
 	 * @param executor To execute the Runnable Listener
-	 * @return A {@link QueryCancellor} that can be used to cancel the query.
+	 * @return A {@link Cancellable} that can be used to cancel the query.
 	 */
-	QueryCancellor queryAsynchronously(Select select, Runnable listener, Executor executor);
+	Cancellable queryAsynchronously(Select select, Runnable listener, Executor executor);
 
 	/**
 	 * Executes the provided CQL Query with the provided listener and executor. This is preferred over the same method
@@ -452,9 +450,9 @@ public interface CqlOperations {
 	 * @param options Query Option
 	 * @param listener Runnable Listener for handling the query in a separate thread
 	 * @param executor To execute the Runnable Listener
-	 * @return A {@link QueryCancellor} that can be used to cancel the query.
+	 * @return A {@link Cancellable} that can be used to cancel the query.
 	 */
-	QueryCancellor queryAsynchronously(String cql, AsynchronousQueryListener listener, Executor executor);
+	Cancellable queryAsynchronously(String cql, AsynchronousQueryListener listener, Executor executor);
 
 	/**
 	 * Executes the provided Select Query with the provided listener and executor. This is preferred over the same method
@@ -464,9 +462,9 @@ public interface CqlOperations {
 	 * @param select The Select Query
 	 * @param listener Runnable Listener for handling the query in a separate thread
 	 * @param executor To execute the Runnable Listener
-	 * @return A {@link QueryCancellor} that can be used to cancel the query.
+	 * @return A {@link Cancellable} that can be used to cancel the query.
 	 */
-	QueryCancellor queryAsynchronously(Select select, AsynchronousQueryListener listener, Executor executor);
+	Cancellable queryAsynchronously(Select select, AsynchronousQueryListener listener, Executor executor);
 
 	/**
 	 * Executes the provided CQL Query with the provided Executor and Runnable implementations.
@@ -475,9 +473,9 @@ public interface CqlOperations {
 	 * @param options Query Option
 	 * @param listener Runnable Listener for handling the query in a separate thread
 	 * @param executor To execute the Runnable Listener
-	 * @return A {@link QueryCancellor} that can be used to cancel the query.
+	 * @return A {@link Cancellable} that can be used to cancel the query.
 	 */
-	QueryCancellor queryAsynchronously(String cql, Runnable listener, QueryOptions options, Executor executor);
+	Cancellable queryAsynchronously(String cql, Runnable listener, QueryOptions options, Executor executor);
 
 	/**
 	 * Executes the provided CQL Query with the provided Listener, Executor and Query Options. This is preferred over the
@@ -488,9 +486,9 @@ public interface CqlOperations {
 	 * @param listener
 	 * @param options
 	 * @param executor
-	 * @return A {@link QueryCancellor} that can be used to cancel the query.
+	 * @return A {@link Cancellable} that can be used to cancel the query.
 	 */
-	QueryCancellor queryAsynchronously(String cql, AsynchronousQueryListener listener, QueryOptions options,
+	Cancellable queryAsynchronously(String cql, AsynchronousQueryListener listener, QueryOptions options,
 			Executor executor);
 
 	/**
@@ -637,10 +635,10 @@ public interface CqlOperations {
 	 * @param cql The string query CQL.
 	 * @param rowMapper The {@link RowMapper} to convert the row into an object of type <code>T</code>.
 	 * @param listener The listener that receives the results upon completion.
-	 * @return A {@link QueryCancellor} that can be used to cancel the query.
+	 * @return A {@link Cancellable} that can be used to cancel the query.
 	 * @throws DataAccessException
 	 */
-	<T> QueryCancellor queryForObjectAsynchronously(String cql, RowMapper<T> rowMapper, QueryForObjectListener<T> listener)
+	<T> Cancellable queryForObjectAsynchronously(String cql, RowMapper<T> rowMapper, QueryForObjectListener<T> listener)
 			throws DataAccessException;
 
 	/**
@@ -650,11 +648,11 @@ public interface CqlOperations {
 	 * @param rowMapper The {@link RowMapper} to convert the row into an object of type <code>T</code>.
 	 * @param listener The listener that receives the results upon completion.
 	 * @param options The {@link QueryOptions} to use. May be <code>null</code>.
-	 * @return A {@link QueryCancellor} that can be used to cancel the query.
+	 * @return A {@link Cancellable} that can be used to cancel the query.
 	 * @throws DataAccessException
 	 */
-	<T> QueryCancellor queryForObjectAsynchronously(String cql, RowMapper<T> rowMapper,
-			QueryForObjectListener<T> listener, QueryOptions options) throws DataAccessException;
+	<T> Cancellable queryForObjectAsynchronously(String cql, RowMapper<T> rowMapper, QueryForObjectListener<T> listener,
+			QueryOptions options) throws DataAccessException;
 
 	/**
 	 * Executes the provided {@link Select} query, and maps the first row returned with the supplied {@link RowMapper}.
@@ -662,11 +660,11 @@ public interface CqlOperations {
 	 * @param select The {@link Select} query to execute.
 	 * @param rowMapper The {@link RowMapper} to convert the row into an object of type <code>T</code>.
 	 * @param listener The listener that receives the results upon completion.
-	 * @return A {@link QueryCancellor} that can be used to cancel the query.
+	 * @return A {@link Cancellable} that can be used to cancel the query.
 	 * @throws DataAccessException
 	 */
-	<T> QueryCancellor queryForObjectAsynchronously(Select select, RowMapper<T> rowMapper,
-			QueryForObjectListener<T> listener) throws DataAccessException;
+	<T> Cancellable queryForObjectAsynchronously(Select select, RowMapper<T> rowMapper, QueryForObjectListener<T> listener)
+			throws DataAccessException;
 
 	/**
 	 * Executes the provided CQL Query, and maps <b>ONE</b> Row returned with the supplied RowMapper.
@@ -722,11 +720,11 @@ public interface CqlOperations {
 	 * 
 	 * @param select The {@link Select} query
 	 * @param requiredType Type that Cassandra data types can be converted to.
-	 * @return A {@link QueryCancellor} that can be used to cancel the query if necessary.
+	 * @return A {@link Cancellable} that can be used to cancel the query if necessary.
 	 * @throws DataAccessException
 	 */
-	<T> QueryCancellor queryForObjectAsynchronously(Select select, Class<T> requiredType,
-			QueryForObjectListener<T> listener) throws DataAccessException;
+	<T> Cancellable queryForObjectAsynchronously(Select select, Class<T> requiredType, QueryForObjectListener<T> listener)
+			throws DataAccessException;
 
 	/**
 	 * Executes the provided select CQL query and returns the first column of the first Row as an object of type
@@ -734,10 +732,10 @@ public interface CqlOperations {
 	 * 
 	 * @param cql The select query CQL. Must not be <code>null</code> or blank.
 	 * @param requiredType The type to convert the first column of the first row to. Must not be <code>null</code>.
-	 * @return A {@link QueryCancellor} that can be used to cancel the query if necessary. Must not be <code>null</code>.
+	 * @return A {@link Cancellable} that can be used to cancel the query if necessary. Must not be <code>null</code>.
 	 * @throws DataAccessException
 	 */
-	<T> QueryCancellor queryForObjectAsynchronously(String cql, Class<T> requiredType, QueryForObjectListener<T> listener)
+	<T> Cancellable queryForObjectAsynchronously(String cql, Class<T> requiredType, QueryForObjectListener<T> listener)
 			throws DataAccessException;
 
 	/**
@@ -747,11 +745,11 @@ public interface CqlOperations {
 	 * @param cql The select query CQL. Must not be <code>null</code> or blank.
 	 * @param requiredType The type to convert the first column of the first row to. Must not be <code>null</code>.
 	 * @param options The {@link QueryOptions} to use. May be <code>null</code>.
-	 * @return A {@link QueryCancellor} that can be used to cancel the query if necessary. Must not be <code>null</code>.
+	 * @return A {@link Cancellable} that can be used to cancel the query if necessary. Must not be <code>null</code>.
 	 * @throws DataAccessException
 	 */
-	<T> QueryCancellor queryForObjectAsynchronously(String cql, Class<T> requiredType,
-			QueryForObjectListener<T> listener, QueryOptions options) throws DataAccessException;
+	<T> Cancellable queryForObjectAsynchronously(String cql, Class<T> requiredType, QueryForObjectListener<T> listener,
+			QueryOptions options) throws DataAccessException;
 
 	/**
 	 * Executes the provided Select query and tries to return the first column of the first Row as a Class<T>.
@@ -802,10 +800,10 @@ public interface CqlOperations {
 	 * @param cql The select query CQL. Must not be <code>null</code> or blank.
 	 * @param listener The {@link QueryForMapListener} that will recieve the results upon query completion. Must not be
 	 *          <code>null</code>.
-	 * @return A {@link QueryCancellor} that can be used to cancel the query if necessary. Must not be <code>null</code>.
+	 * @return A {@link Cancellable} that can be used to cancel the query if necessary. Must not be <code>null</code>.
 	 * @throws DataAccessException
 	 */
-	QueryCancellor queryForMapAsynchronously(String cql, QueryForMapListener listener) throws DataAccessException;
+	Cancellable queryForMapAsynchronously(String cql, QueryForMapListener listener) throws DataAccessException;
 
 	/**
 	 * Executes the provided CQL query asynchronously and maps the first row to a {@link Map}&lt;String,Object&gt;.
@@ -815,10 +813,10 @@ public interface CqlOperations {
 	 * @param listener The {@link QueryForMapListener} that will recieve the results upon query completion. Must not be
 	 *          <code>null</code>.
 	 * @param options The {@link QueryOptions} to use. May be <code>null</code>.
-	 * @return A {@link QueryCancellor} that can be used to cancel the query if necessary. Must not be <code>null</code>.
+	 * @return A {@link Cancellable} that can be used to cancel the query if necessary. Must not be <code>null</code>.
 	 * @throws DataAccessException
 	 */
-	QueryCancellor queryForMapAsynchronously(String cql, QueryForMapListener listener, QueryOptions options)
+	Cancellable queryForMapAsynchronously(String cql, QueryForMapListener listener, QueryOptions options)
 			throws DataAccessException;
 
 	/**
@@ -828,10 +826,10 @@ public interface CqlOperations {
 	 * @param cql The select query CQL. Must not be <code>null</code> or blank.
 	 * @param listener The {@link QueryForMapListener} that will recieve the results upon query completion. Must not be
 	 *          <code>null</code>.
-	 * @return A {@link QueryCancellor} that can be used to cancel the query if necessary. Must not be <code>null</code>.
+	 * @return A {@link Cancellable} that can be used to cancel the query if necessary. Must not be <code>null</code>.
 	 * @throws DataAccessException
 	 */
-	QueryCancellor queryForMapAsynchronously(Select select, QueryForMapListener listener) throws DataAccessException;
+	Cancellable queryForMapAsynchronously(Select select, QueryForMapListener listener) throws DataAccessException;
 
 	/**
 	 * Process a ResultSet with <b>ONE</b> Row and convert to a Map. This is used internal to the Template for core
@@ -873,10 +871,10 @@ public interface CqlOperations {
 	 * @param select The {@link Select} query
 	 * @param elementType The type to cast the data values to
 	 * @param listener The listener to receive the results asynchronously. Must not be <code>null</code>.
-	 * @return {@link QueryCancellor} to cancel the query if necessary
+	 * @return {@link Cancellable} to cancel the query if necessary
 	 * @throws DataAccessException
 	 */
-	<T> QueryCancellor queryForListAsynchronously(Select select, Class<T> elementType, QueryForListListener<T> listener)
+	<T> Cancellable queryForListAsynchronously(Select select, Class<T> elementType, QueryForListListener<T> listener)
 			throws DataAccessException;
 
 	/**
@@ -886,10 +884,10 @@ public interface CqlOperations {
 	 * @param select The select query CQL
 	 * @param elementType The type to cast the data values to
 	 * @param listener The listener to receive the results asynchronously. Must not be <code>null</code>.
-	 * @return {@link QueryCancellor} to cancel the query if necessary
+	 * @return {@link Cancellable} to cancel the query if necessary
 	 * @throws DataAccessException
 	 */
-	<T> QueryCancellor queryForListAsynchronously(String select, Class<T> elementType, QueryForListListener<T> listener)
+	<T> Cancellable queryForListAsynchronously(String select, Class<T> elementType, QueryForListListener<T> listener)
 			throws DataAccessException;
 
 	/**
@@ -921,10 +919,10 @@ public interface CqlOperations {
 	 * 
 	 * @param select The {@link Select} query. Must not be <code>null</code>.
 	 * @param listener The listener that will receive the results upon query completion. Must not be <code>null</code>.
-	 * @return A {@link QueryCancellor} that can be used to cancel the query. Must not be <code>null</code>.
+	 * @return A {@link Cancellable} that can be used to cancel the query. Must not be <code>null</code>.
 	 * @throws DataAccessException
 	 */
-	QueryCancellor queryForListOfMapAsynchronously(Select select, QueryForListListener<Map<String, Object>> listener)
+	Cancellable queryForListOfMapAsynchronously(Select select, QueryForListListener<Map<String, Object>> listener)
 			throws DataAccessException;
 
 	/**
@@ -934,10 +932,10 @@ public interface CqlOperations {
 	 * 
 	 * @param select The select query CQL. Must not be <code>null</code> or blank.
 	 * @param listener The listener that will receive the results upon query completion. Must not be <code>null</code>.
-	 * @return A {@link QueryCancellor} that can be used to cancel the query. Must not be <code>null</code>.
+	 * @return A {@link Cancellable} that can be used to cancel the query. Must not be <code>null</code>.
 	 * @throws DataAccessException
 	 */
-	QueryCancellor queryForListOfMapAsynchronously(String cql, QueryForListListener<Map<String, Object>> listener)
+	Cancellable queryForListOfMapAsynchronously(String cql, QueryForListListener<Map<String, Object>> listener)
 			throws DataAccessException;
 
 	/**
@@ -948,10 +946,10 @@ public interface CqlOperations {
 	 * @param select The select query CQL. Must not be <code>null</code> or blank.
 	 * @param listener The listener that will receive the results upon query completion. Must not be <code>null</code>.
 	 * @param options The {@link QueryOptions} to use. May be <code>null</code>.
-	 * @return A {@link QueryCancellor} that can be used to cancel the query. Must not be <code>null</code>.
+	 * @return A {@link Cancellable} that can be used to cancel the query. Must not be <code>null</code>.
 	 * @throws DataAccessException
 	 */
-	QueryCancellor queryForListOfMapAsynchronously(String cql, QueryForListListener<Map<String, Object>> listener,
+	Cancellable queryForListOfMapAsynchronously(String cql, QueryForListListener<Map<String, Object>> listener,
 			QueryOptions options) throws DataAccessException;
 
 	/**

@@ -16,7 +16,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.cassandra.core.AsynchronousQueryListener;
 import org.springframework.cassandra.core.ConsistencyLevel;
-import org.springframework.cassandra.core.QueryCancellor;
+import org.springframework.cassandra.core.Cancellable;
 import org.springframework.cassandra.core.QueryForListOfMapListener;
 import org.springframework.cassandra.core.QueryForMapListener;
 import org.springframework.cassandra.core.QueryForObjectListener;
@@ -208,8 +208,8 @@ public class AsynchronousTest extends AbstractAsynchronousTest {
 		new AsynchronousQueryListenerTestTemplate() {
 			@Override
 			void doAsyncQuery(Book b, BasicListener listener) {
-				QueryCancellor qc = t.queryAsynchronously(cql(b), listener);
-				qc.cancelQuery();
+				Cancellable qc = t.queryAsynchronously(cql(b), listener);
+				qc.cancel();
 			}
 		}.test();
 	}
