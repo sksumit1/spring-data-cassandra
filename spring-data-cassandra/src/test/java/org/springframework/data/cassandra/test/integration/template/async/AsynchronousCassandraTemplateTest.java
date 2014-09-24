@@ -21,6 +21,7 @@ import static org.junit.Assert.fail;
 import static org.springframework.data.cassandra.repository.support.BasicMapId.id;
 
 import java.util.Collection;
+import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.CancellationException;
 
@@ -38,6 +39,7 @@ import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.CassandraTemplate;
 import org.springframework.data.cassandra.core.DeletionListener;
 import org.springframework.data.cassandra.core.WriteListener;
+import org.springframework.data.cassandra.mapping.Column;
 import org.springframework.data.cassandra.mapping.PrimaryKeyColumn;
 import org.springframework.data.cassandra.mapping.Table;
 import org.springframework.data.cassandra.test.integration.support.AbstractSpringDataEmbeddedCassandraIntegrationTest;
@@ -65,36 +67,45 @@ public class AsynchronousCassandraTemplateTest extends AbstractSpringDataEmbedde
 			return UUID.randomUUID().toString();
 		}
 
+		static final Random RNG = new Random();
+
 		public static Thing random() {
-			return new Thing(uuid());
+			return new Thing(uuid(), RNG.nextInt());
 		}
 
 		@PrimaryKeyColumn(ordinal = 0, type = PrimaryKeyType.PARTITIONED)
 		public String stuff;
 
+		@Column
+		public int number;
+
 		public Thing() {}
 
-		public Thing(String stuff) {
+		public Thing(String stuff, int number) {
 			this.stuff = stuff;
+			this.number = number;
 		}
 
 		@Override
 		public int hashCode() {
 			final int prime = 31;
 			int result = 1;
+			result = prime * result + number;
 			result = prime * result + ((stuff == null) ? 0 : stuff.hashCode());
 			return result;
 		}
 
 		@Override
-		public boolean equals(Object that) {
-			if (this == that)
+		public boolean equals(Object obj) {
+			if (this == obj)
 				return true;
-			if (that == null)
+			if (obj == null)
 				return false;
-			if (getClass() != that.getClass())
+			if (getClass() != obj.getClass())
 				return false;
-			Thing other = (Thing) that;
+			Thing other = (Thing) obj;
+			if (number != other.number)
+				return false;
 			if (stuff == null) {
 				if (other.stuff != null)
 					return false;
@@ -193,7 +204,7 @@ public class AsynchronousCassandraTemplateTest extends AbstractSpringDataEmbedde
 	public void testUpdateAsynchronously(ConsistencyLevel cl) throws Exception {
 		Thing thing = Thing.random();
 		t.insert(thing);
-		thing.stuff = Thing.random().stuff;
+		thing.number = Thing.random().number;
 		ThingWriteListener listener = new ThingWriteListener();
 		t.updateAsynchronously(thing, listener, new WriteOptions(cl, RetryPolicy.LOGGING));
 		listener.await();

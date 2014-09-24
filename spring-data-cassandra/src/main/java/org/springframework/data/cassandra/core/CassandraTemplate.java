@@ -806,7 +806,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 
 		Assert.notNull(entity);
 
-		Insert insert = createInsertQuery(getTableName(entity.getClass()).toCql(), entity, options, cassandraConverter);
+		Update update = createUpdateQuery(getTableName(entity.getClass()).toCql(), entity, options, cassandraConverter);
 
 		AsynchronousQueryListener aql = listener == null ? null : new AsynchronousQueryListener() {
 
@@ -822,7 +822,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 			}
 		};
 
-		return executeAsynchronously(insert, aql);
+		return executeAsynchronously(update, aql);
 	}
 
 	/**
