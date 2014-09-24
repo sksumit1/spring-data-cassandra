@@ -8,10 +8,12 @@ import org.springframework.cassandra.test.unit.support.TestListener;
 public class ListListener<T> extends TestListener implements QueryForListListener<T> {
 
 	Exception exception;
+	List<T> result;
 
 	@Override
 	public void onQueryComplete(List<T> results) {
 		countDown();
+		this.result = results;
 	}
 
 	@Override

@@ -941,6 +941,20 @@ public interface CqlOperations {
 			throws DataAccessException;
 
 	/**
+	 * Executes the provided select CQL query and converts the results to a {@link List} of {@link Map}s. Each element in
+	 * the {@link List} represents a row returned from the query. Each row's column(s) are put into a {@link Map} as
+	 * values keyed by column name.
+	 * 
+	 * @param select The select query CQL. Must not be <code>null</code> or blank.
+	 * @param listener The listener that will receive the results upon query completion. Must not be <code>null</code>.
+	 * @param options The {@link QueryOptions} to use. May be <code>null</code>.
+	 * @return A {@link QueryCancellor} that can be used to cancel the query. Must not be <code>null</code>.
+	 * @throws DataAccessException
+	 */
+	QueryCancellor queryForListOfMapAsynchronously(String cql, QueryForListListener<Map<String, Object>> listener,
+			QueryOptions options) throws DataAccessException;
+
+	/**
 	 * Executes the provided Select Query and converts the results to a basic List of Maps. Each element in the List
 	 * represents a Row returned from the Query. Each Row's columns are put into the map as column/value.
 	 * 

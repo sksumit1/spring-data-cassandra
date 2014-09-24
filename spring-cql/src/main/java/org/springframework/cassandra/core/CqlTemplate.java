@@ -1481,6 +1481,12 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	@Override
 	public QueryCancellor queryForListOfMapAsynchronously(String cql,
 			final QueryForListListener<Map<String, Object>> listener) throws DataAccessException {
+		return queryForListOfMapAsynchronously(cql, listener, null);
+	}
+
+	@Override
+	public QueryCancellor queryForListOfMapAsynchronously(String cql,
+			final QueryForListListener<Map<String, Object>> listener, QueryOptions options) throws DataAccessException {
 
 		return doExecuteAsync(new SimpleStatement(cql), new AsynchronousQueryListener() {
 
@@ -1492,7 +1498,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 					listener.onException(translateExceptionIfPossible(e));
 				}
 			}
-		});
+		}, options);
 	}
 
 	@Override

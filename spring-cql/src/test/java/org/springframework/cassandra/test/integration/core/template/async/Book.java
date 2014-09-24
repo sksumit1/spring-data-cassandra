@@ -8,15 +8,13 @@ public class Book {
 		return UUID.randomUUID().toString();
 	}
 
-	public static final String TABLE = "book";
-
 	public static Book random() {
 		return new Book(uuid(), uuid());
 	}
 
 	public Book() {}
 
-	public Book(String isbn, String title) {
+	public Book(String title, String isbn) {
 		this.isbn = isbn;
 		this.title = title;
 	}
